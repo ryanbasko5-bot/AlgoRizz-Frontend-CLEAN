@@ -1085,59 +1085,46 @@ ${optimizedContent}
 
 
  return (
-   <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white font-sans relative overflow-hidden">
-     {/* Animated Background */}
-     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-       <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-10 blur-3xl" style={{ background: algorizzAccentColor }}></div>
-       <div className="absolute top-1/2 -left-40 w-80 h-80 rounded-full opacity-10 blur-3xl bg-blue-500"></div>
-     </div>
-
-     {/* TOP NAVIGATION - Floating */}
-     <div className="absolute top-6 right-6 z-20 flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-full px-2 py-2 border border-white/20">
-        <button
-           onClick={() => setView('editor')}
-           className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 transition-all ${view === 'editor' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
-        >
-           <Wand2 className="h-4 w-4" /> Editor
-        </button>
-        <button
-           onClick={() => setView('library')}
-           className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 transition-all ${view === 'library' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
-        >
-           <Library className="h-4 w-4" /> Library
-        </button>
-
-       <div className="h-6 w-px bg-white/20 mx-1"></div>
-
-       {keyStatus === 'valid' && <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 px-3"><ShieldCheck className="h-4 w-4" /> Active</span>}
-       {keyStatus === 'invalid' && <span className="text-xs font-bold text-red-400 flex items-center gap-1.5 px-3 animate-pulse"><ShieldAlert className="h-4 w-4" /> Error</span>}
-      
-       <button
-         onClick={() => setShowSettings(true)}
-         className="p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all hover:scale-110 border border-white/20"
-         title="Settings / API Key"
-       >
-         <Settings className="h-5 w-5" />
-       </button>
-     </div>
-
-     <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 relative z-10">
-      
-       {/* Header - Modern Hero */}
-       <div className="mb-12 text-center md:text-left">
-         <div className="flex items-center gap-3 mb-4">
-           <img src={algorizzLogoPath} alt="AlgoRizz Logo" className="h-12 md:h-14 drop-shadow-lg" />
-           <div>
-             <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-orange-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
-               AlgoRizz
-             </h1>
-             <p className="text-sm text-slate-400">AI-Powered Content Excellence</p>
-           </div>
+   <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+     {/* TOP NAVIGATION - Sticky Header */}
+     <div className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
+       <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
+         <div className="flex items-center gap-3">
+           <img src={algorizzLogoPath} alt="AlgoRizz Logo" className="h-8" />
+           <h1 className="text-2xl font-bold" style={{ color: algorizzAccentColor }}>AlgoRizz</h1>
          </div>
-         <p className="text-slate-300 max-w-2xl text-lg md:text-base">
-           {view === 'editor' ? "Transform your content with AI-powered AEO optimization." : "Your collection of optimised, high-performing content."}
-         </p>
+         
+         <div className="flex items-center gap-4">
+           <button
+             onClick={() => setView('editor')}
+             className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${ view === 'editor' ? 'bg-slate-100 text-slate-900 border border-slate-300' : 'text-slate-600 hover:bg-slate-50 border border-transparent' }`}
+           >
+             <Wand2 className="h-4 w-4 inline mr-2" />Editor
+           </button>
+           <button
+             onClick={() => setView('library')}
+             className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${ view === 'library' ? 'bg-slate-100 text-slate-900 border border-slate-300' : 'text-slate-600 hover:bg-slate-50 border border-transparent' }`}
+           >
+             <Library className="h-4 w-4 inline mr-2" />Library
+           </button>
+
+           <div className="h-6 w-px bg-slate-200"></div>
+
+           {keyStatus === 'valid' && <span className="text-xs font-bold text-emerald-600 flex items-center gap-1 px-3"><ShieldCheck className="h-4 w-4" /> Active</span>}
+           {keyStatus === 'invalid' && <span className="text-xs font-bold text-red-600 flex items-center gap-1 px-3 animate-pulse"><ShieldAlert className="h-4 w-4" /> Error</span>}
+          
+           <button
+             onClick={() => setShowSettings(true)}
+             className="p-2 hover:bg-slate-100 text-slate-600 rounded-lg transition-all border border-transparent hover:border-slate-200"
+             title="Settings / API Key"
+           >
+             <Settings className="h-5 w-5" />
+           </button>
+         </div>
        </div>
+     </div>
+
+     <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
 
 
        {/* VIEW: LIBRARY */}
@@ -1145,20 +1132,18 @@ ${optimizedContent}
           <div className="min-h-[600px]">
              <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                  <div>
-                   <h2 className="text-3xl font-bold text-white flex items-center gap-3 mb-1">
-                       <div className="p-3 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl">
-                         <Library className="h-6 w-6 text-white" />
-                       </div>
-                       Saved Posts
+                   <h2 className="text-3xl font-bold text-slate-900 mb-1">
+                     <Library className="h-6 w-6 inline mr-3" style={{ color: algorizzAccentColor }} />
+                     Saved Posts
                    </h2>
-                   <p className="text-slate-400">{savedPosts.length} articles ready to deploy</p>
+                   <p className="text-slate-600">{savedPosts.length} articles ready to deploy</p>
                  </div>
                  <div className="relative w-full md:w-96">
-                     <Search className="absolute left-4 top-3.5 h-5 w-5 text-slate-500" />
+                     <Search className="absolute left-4 top-3.5 h-5 w-5 text-slate-400" />
                      <input
                          type="text"
                          placeholder="Search posts..."
-                         className="w-full pl-12 pr-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-slate-400 focus:bg-white/20 focus:border-white/40 focus:ring-0 transition-all"
+                         className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 transition-all"
                          value={searchQuery}
                          onChange={(e) => setSearchQuery(e.target.value)}
                      />
@@ -1172,50 +1157,42 @@ ${optimizedContent}
                          p.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          p.tags?.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()))
                      ).map((post) => (
-                         <div key={post.id} onClick={() => handleLoadPost(post)} className="group bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md border border-white/20 rounded-2xl p-6 hover:from-white/20 hover:to-white/10 hover:border-white/40 transition-all cursor-pointer relative overflow-hidden">
-                             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `linear-gradient(135deg, ${algorizzAccentColor}20 0%, transparent 100%)` }}></div>
-                             <div className="relative z-10">
-                               <div className="flex justify-between items-start mb-4">
-                                   <span className="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold rounded-full">
-                                       {post.category || 'General'}
-                                   </span>
-                                   <button
-                                     onClick={(e) => handleDeletePost(post.id, e)}
-                                     className="p-2 text-slate-300 hover:text-red-400 hover:bg-red-500/20 rounded-lg transition-all"
-                                   >
-                                       <Trash2 className="h-4 w-4" />
-                                   </button>
-                               </div>
-                               <h3 className="font-bold text-white mb-2 line-clamp-2 group-hover:text-orange-300 transition-colors text-lg">
-                                   {post.title}
-                               </h3>
-                               <p className="text-sm text-slate-300 mb-4 line-clamp-2">
-                                   {post.summary}
-                               </p>
-                               <div className="flex flex-wrap gap-2 mt-auto">
-                                   {post.tags?.slice(0, 3).map(tag => (
-                                       <span key={tag} className="text-xs text-orange-300 bg-orange-500/20 px-2.5 py-1 rounded-lg">#{tag}</span>
-                                   ))}
-                               </div>
+                         <div key={post.id} onClick={() => handleLoadPost(post)} className="group bg-white border border-slate-200 rounded-xl p-6 hover:shadow-md hover:border-slate-300 transition-all cursor-pointer">
+                             <div className="flex justify-between items-start mb-3">
+                                 <span className="px-3 py-1 text-xs font-semibold rounded-full" style={{ backgroundColor: algorizzAccentColor + '15', color: algorizzAccentColor }}>
+                                     {post.category || 'General'}
+                                 </span>
+                                 <button
+                                   onClick={(e) => handleDeletePost(post.id, e)}
+                                   className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                 >
+                                     <Trash2 className="h-4 w-4" />
+                                 </button>
                              </div>
-                             <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                 <ArrowRight className="h-5 w-5 text-orange-400" />
+                             <h3 className="font-bold text-slate-900 mb-2 line-clamp-2 group-hover:text-slate-700">
+                                 {post.title}
+                             </h3>
+                             <p className="text-sm text-slate-600 mb-4 line-clamp-2">
+                                 {post.summary}
+                             </p>
+                             <div className="flex flex-wrap gap-2">
+                                 {post.tags?.slice(0, 3).map(tag => (
+                                     <span key={tag} className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">#{tag}</span>
+                                 ))}
                              </div>
                          </div>
                      ))}
                  </div>
              ) : isAuthReady ? (
-                 <div className="flex flex-col items-center justify-center h-96 text-slate-400">
-                     <div className="p-6 bg-white/10 rounded-3xl mb-4 backdrop-blur-md border border-white/20">
-                       <Library className="h-16 w-16 opacity-30" />
-                     </div>
-                     <p className="text-lg">No saved posts yet</p>
-                     <p className="text-sm text-slate-500">Create your first optimised content in the Editor</p>
+                 <div className="flex flex-col items-center justify-center h-96">
+                     <Library className="h-16 w-16 text-slate-300 mb-4" />
+                     <p className="text-slate-600 font-medium">No saved posts yet</p>
+                     <p className="text-sm text-slate-500">Create your first optimised post in the Editor</p>
                  </div>
              ) : (
-                 <div className="flex flex-col items-center justify-center h-96 text-slate-400">
-                     <RefreshCw className="h-12 w-12 mb-4 animate-spin text-orange-400" />
-                     <p>Connecting to Library...</p>
+                 <div className="flex flex-col items-center justify-center h-96">
+                     <RefreshCw className="h-12 w-12 animate-spin text-slate-400 mb-4" />
+                     <p className="text-slate-600">Connecting to library...</p>
                  </div>
              )}
           </div>
@@ -1228,174 +1205,168 @@ ${optimizedContent}
            {/* LEFT COLUMN: Controls */}
          <div className="lg:col-span-4 flex flex-col gap-6">
            {/* Brand Settings */}
-           <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/20">
-             <h3 className="font-bold text-white mb-6 flex items-center gap-3 text-lg">
-               <div className="p-2 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg">
-                 <Globe className="h-5 w-5 text-white" />
-               </div>
+           <div className="bg-white border border-slate-200 p-6 rounded-xl">
+             <h3 className="font-bold text-slate-900 mb-6 text-lg">
+               <Globe className="h-5 w-5 inline mr-2" style={{ color: algorizzAccentColor }} />
                Brand Identity
              </h3>
              <div className="space-y-4">
                {/* URL Input */}
                <div className="flex gap-2">
                  <div className="flex-grow">
-                   <label className="text-xs font-semibold text-slate-300 uppercase block mb-2">Website URL</label>
-                   <input type="text" placeholder="mysite.com" className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-500 focus:bg-white/20 focus:border-white/40 focus:ring-0 transition-all" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)}/>
+                   <label className="text-sm font-semibold text-slate-700 block mb-2">Website URL</label>
+                   <input type="text" placeholder="mysite.com" className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 outline-none" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)}/>
                  </div>
-                 <button onClick={handleAnalyzeBrandUrl} disabled={!websiteUrl || isAnalyzingBrand} className="mt-8 px-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:from-slate-500 disabled:to-slate-600 text-white rounded-lg transition-all flex items-center gap-2 font-semibold" title="Auto-detect from URL">
+                 <button onClick={handleAnalyzeBrandUrl} disabled={!websiteUrl || isAnalyzingBrand} className="mt-8 px-4 text-slate-700 hover:bg-slate-100 border border-slate-200 rounded-lg transition-all flex items-center gap-2 font-semibold disabled:opacity-50" title="Auto-detect from URL">
                    {isAnalyzingBrand ? <RefreshCw className="h-4 w-4 animate-spin"/> : <Wand2 className="h-4 w-4"/>}
                  </button>
                </div>
                {/* IMAGE UPLOAD */}
-               <div className="relative flex py-3 items-center"><div className="flex-grow border-t border-white/20"></div><span className="flex-shrink-0 mx-2 text-slate-400 text-xs font-semibold">OR UPLOAD IMAGE</span><div className="flex-grow border-t border-white/20"></div></div>
                <div>
-                  <label className={`flex items-center justify-center gap-3 w-full p-4 border-2 border-dashed border-white/30 rounded-xl text-sm text-slate-300 cursor-pointer hover:bg-white/10 transition-all ${isAnalyzingBrand ? 'opacity-50 pointer-events-none' : ''}`}>
-                     {isAnalyzingBrand ? <RefreshCw className="h-5 w-5 animate-spin text-orange-400" /> : <Upload className="h-5 w-5 text-orange-400" />}
-                     <span className="font-medium">{isAnalyzingBrand ? `Analysing...` : "Upload Brand Asset"}</span>
+                  <label className={`flex items-center justify-center gap-3 w-full p-4 border-2 border-dashed border-slate-300 rounded-lg text-sm text-slate-600 cursor-pointer hover:bg-slate-50 transition-all ${isAnalyzingBrand ? 'opacity-50 pointer-events-none' : ''}`}>
+                     {isAnalyzingBrand ? <RefreshCw className="h-5 w-5 animate-spin text-slate-400" /> : <Upload className="h-5 w-5 text-slate-400" />}
+                     <span className="font-medium">{isAnalyzingBrand ? `Analysing...` : "Upload image"}</span>
                      <input type="file" accept="image/*" ref={fileInputRef} onChange={handleBrandImageUpload} className="hidden" />
                   </label>
                </div>
                {/* Logo Preview */}
                {logoUrl && (
-                 <div className="mt-3 p-3 bg-white/10 border border-white/20 rounded-xl text-center relative group">
-                     <img src={logoUrl} alt="Brand Asset" className="h-20 mx-auto object-contain" />
-                     <button onClick={() => setLogoUrl('')} className="absolute top-2 right-2 p-1.5 bg-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity text-white hover:bg-red-600" title="Remove Image"><X className="h-3 w-3" /></button>
+                 <div className="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg text-center relative group">
+                     <img src={logoUrl} alt="Brand Asset" className="h-16 mx-auto object-contain" />
+                     <button onClick={() => setLogoUrl('')} className="absolute top-2 right-2 p-1 bg-white rounded border border-slate-200 hover:bg-red-50 hover:border-red-300 text-slate-400 hover:text-red-600" title="Remove Image"><X className="h-3 w-3" /></button>
                  </div>
                )}
                {/* PALETTE & COLOR */}
                <div className="space-y-3 pt-2">
-                  <label className="text-xs font-semibold text-slate-300 uppercase flex items-center gap-2"><Palette className="h-4 w-4 text-orange-400"/> Brand Colour</label>
+                  <label className="text-sm font-semibold text-slate-700 flex items-center gap-2"><Palette className="h-4 w-4" style={{ color: algorizzAccentColor }}/> Brand Colour</label>
                   <div className="flex gap-2 mb-3 flex-wrap">
                      {colorPalette.map((col, idx) => (
-                       <button key={idx} onClick={() => setBrandColor(col)} className={`w-10 h-10 rounded-full border-2 transition-all hover:scale-110 focus:outline-none ${brandColor === col ? 'border-white ring-2 ring-offset-2 ring-offset-slate-900 ring-orange-400' : 'border-white/30'}`} style={{ backgroundColor: col }} title={`Use this colour: ${col}`}/>
+                       <button key={idx} onClick={() => setBrandColor(col)} className={`w-10 h-10 rounded-full border-2 transition-all hover:scale-110 focus:outline-none ${brandColor === col ? 'border-slate-900 ring-2 ring-offset-2 ring-slate-300' : 'border-slate-300'}`} style={{ backgroundColor: col }} title={`Use this colour: ${col}`}/>
                      ))}
                   </div>
                   <div className="flex items-center gap-2 mt-2">
-                     <input type="color" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} className="h-10 w-10 rounded-lg cursor-pointer border-0 p-1"/>
-                     <input type="text" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} className="text-xs text-slate-200 font-mono bg-white/10 border border-white/20 rounded-lg p-2 w-28 focus:bg-white/20 focus:border-white/40 focus:ring-0 transition-all"/>
+                     <input type="color" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} className="h-10 w-10 rounded border border-slate-200 cursor-pointer"/>
+                     <input type="text" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} className="text-xs text-slate-700 font-mono bg-white border border-slate-200 rounded-lg p-2 w-28 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 outline-none"/>
                   </div>
                </div>
                {/* Font & Tone */}
                <div className="grid grid-cols-1 gap-3 pt-2">
                  <div>
-                   <label className="text-xs font-semibold text-slate-300 uppercase flex items-center gap-2 mb-2"><Type className="h-4 w-4 text-orange-400"/> Font Family</label>
-                   <input type="text" value={brandFont} onChange={(e) => setBrandFont(e.target.value)} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:bg-white/20 focus:border-white/40 focus:ring-0 transition-all"/>
+                   <label className="text-sm font-semibold text-slate-700 flex items-center gap-2 mb-2"><Type className="h-4 w-4" style={{ color: algorizzAccentColor }}/> Font Family</label>
+                   <input type="text" value={brandFont} onChange={(e) => setBrandFont(e.target.value)} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 outline-none"/>
                  </div>
                  <div>
-                  <label className="text-xs font-semibold text-slate-300 uppercase block mb-2">Brand Tone</label>
-                  <input type="text" value={brandTone} onChange={(e) => setBrandTone(e.target.value)} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:bg-white/20 focus:border-white/40 focus:ring-0 transition-all"/>
+                  <label className="text-sm font-semibold text-slate-700 block mb-2">Brand Tone</label>
+                  <input type="text" value={brandTone} onChange={(e) => setBrandTone(e.target.value)} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 outline-none"/>
                  </div>
                </div>
              </div>
            </div>
            {/* Content Input */}
-           <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/20 flex-grow flex flex-col">
-              <div className="flex items-center gap-3 mb-5 border-b border-white/20 pb-4">
-                <button onClick={() => setInputMode('text')} className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${inputMode === 'text' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : 'text-slate-400 hover:text-white bg-white/10'}`}><FileText className="h-4 w-4" /> Text</button>
-                <button onClick={() => setInputMode('audio')} className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${inputMode === 'audio' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : 'text-slate-400 hover:text-white bg-white/10'}`}><Mic className="h-4 w-4" /> Audio</button>
+           <div className="bg-white border border-slate-200 p-6 rounded-xl flex-grow flex flex-col">
+              <div className="flex items-center gap-2 mb-4 border-b border-slate-200 pb-4">
+                <button onClick={() => setInputMode('text')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${inputMode === 'text' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}><FileText className="h-4 w-4 inline mr-1" /> Text</button>
+                <button onClick={() => setInputMode('audio')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${inputMode === 'audio' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}><Mic className="h-4 w-4 inline mr-1" /> Audio</button>
               </div>
-             <div className="mb-5">
-               <label className="text-xs font-semibold text-slate-300 uppercase block mb-2">Target Keyword</label>
+             <div className="mb-4">
+               <label className="text-sm font-semibold text-slate-700 block mb-2">Target Keyword</label>
                <div className="flex gap-2">
-                 <input type="text" placeholder="e.g. AEO Strategy" className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-500 focus:bg-white/20 focus:border-white/40 focus:ring-0 transition-all" value={targetKeyword} onChange={(e) => setTargetKeyword(e.target.value)}/>
-                  <button onClick={handleSuggestKeyword} disabled={!inputText || isGeneratingKeyword} className="px-4 py-3 bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white rounded-lg border border-white/20 transition-all flex items-center gap-2 font-semibold disabled:opacity-50" title="Auto-generate best fit keyword">
+                 <input type="text" placeholder="e.g. AEO Strategy" className="flex-1 px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 outline-none" value={targetKeyword} onChange={(e) => setTargetKeyword(e.target.value)}/>
+                  <button onClick={handleSuggestKeyword} disabled={!inputText || isGeneratingKeyword} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg border border-slate-200 transition-all flex items-center gap-2 font-semibold disabled:opacity-50" title="Auto-generate keyword">
                    {isGeneratingKeyword ? <RefreshCw className="h-4 w-4 animate-spin"/> : <Sparkles className="h-4 w-4"/>}
                  </button>
                </div>
              </div>
-              <div className="mb-5">
-                <button onClick={handleGenerateImage} disabled={!targetKeyword || isGeneratingImage} className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:from-slate-500 disabled:to-slate-600 text-white rounded-xl border-0 transition-all flex items-center justify-center gap-3 text-sm font-semibold">
+              <div className="mb-4">
+                <button onClick={handleGenerateImage} disabled={!targetKeyword || isGeneratingImage} className="w-full px-4 py-3 text-white rounded-lg border-0 transition-all flex items-center justify-center gap-2 text-sm font-semibold hover:shadow-md disabled:opacity-50" style={{ backgroundColor: algorizzAccentColor }}>
                    {isGeneratingImage ? <RefreshCw className="h-4 w-4 animate-spin"/> : <LucideImage className="h-4 w-4"/>}
                    {isGeneratingImage ? "Designing..." : "Generate Header Image"}
                  </button>
-                 {headerImage && <div className="mt-3 text-xs text-emerald-400 flex items-center justify-center gap-2 font-semibold"><Check className="h-3 w-3" /> Image Ready</div>}
+                 {headerImage && <div className="mt-2 text-xs text-emerald-600 flex items-center justify-center gap-1 font-semibold"><Check className="h-3 w-3" /> Ready</div>}
               </div>
-             <div className="flex-grow mb-5">
+             <div className="flex-grow mb-4">
                {inputMode === 'text' && (
                  <>
-                   <label className="text-xs font-semibold text-slate-300 uppercase flex justify-between mb-2"><span>Blog Post Content</span>{inputText && <span className="text-orange-400 flex items-center gap-1 font-semibold"><LinkIcon className="h-3 w-3"/> Links Preserved</span>}</label>
-                   <div className="relative h-64">
-                     <div ref={contentEditableRef} contentEditable className="w-full h-full p-4 bg-white/10 border border-white/20 rounded-lg focus:bg-white/20 focus:border-white/40 focus:ring-0 overflow-y-auto text-sm text-white placeholder-slate-500" style={{ outlineColor: 'transparent' }} onInput={(e) => setInputText(e.currentTarget.innerHTML)} dangerouslySetInnerHTML={{ __html: inputText || '' }} data-placeholder="Paste your article here..."/>
-                     {!inputText && <div className="absolute top-4 left-4 text-slate-500 text-sm pointer-events-none">Paste your article here (links preserved)...</div>}
+                   <label className="text-sm font-semibold text-slate-700 block mb-2">Blog Post Content</label>
+                   <div className="relative h-56">
+                     <div ref={contentEditableRef} contentEditable className="w-full h-full p-3 bg-white border border-slate-200 rounded-lg focus:border-slate-300 focus:ring-1 focus:ring-slate-200 overflow-y-auto text-sm text-slate-900 outline-none" onInput={(e) => setInputText(e.currentTarget.innerHTML)} dangerouslySetInnerHTML={{ __html: inputText || '' }}/>
+                     {!inputText && <div className="absolute top-3 left-3 text-slate-400 text-sm pointer-events-none">Paste your article here...</div>}
                    </div>
                  </>
                )}
                {inputMode === 'audio' && (
                  <>
-                   <label className="text-xs font-semibold text-slate-300 uppercase mb-3 block">Upload Audio</label>
-                   <div className={`border-2 border-dashed border-white/30 rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all ${isTranscribing ? 'bg-white/5 cursor-wait' : 'hover:bg-white/10 hover:border-white/50 cursor-pointer'}`}>
+                   <label className="text-sm font-semibold text-slate-700 block mb-2">Upload Audio</label>
+                   <div className={`border-2 border-dashed border-slate-300 rounded-lg p-8 flex flex-col items-center justify-center text-center transition-all ${isTranscribing ? 'bg-slate-50 cursor-wait' : 'hover:bg-slate-50 hover:border-slate-400 cursor-pointer'}`}>
                        {isTranscribing ? (
                          <div className="flex flex-col items-center">
-                            <RefreshCw className="h-10 w-10 text-orange-400 animate-spin mb-3" />
-                            <p className="text-sm font-semibold text-white">{transcriptionStatus || 'Processing...'}</p>
-                            <p className="text-xs text-slate-400 mt-2">Estimated: {timeLeft}s</p>
-                            {totalEstTime > 0 && <div className="w-full max-w-xs bg-white/20 rounded-full h-1.5 mt-3 overflow-hidden"><div className="bg-gradient-to-r from-orange-500 to-red-500 h-1.5 rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, ((totalEstTime - timeLeft) / totalEstTime) * 100)}%` }}></div></div>}
+                            <RefreshCw className="h-10 w-10 text-blue-500 animate-spin mb-3" />
+                            <p className="text-sm font-semibold text-slate-900">{transcriptionStatus || 'Processing...'}</p>
+                            <p className="text-xs text-slate-500 mt-1">Est: {timeLeft}s</p>
                          </div>
                        ) : (
                          <label className="cursor-pointer flex flex-col items-center w-full">
-                           <div className="h-12 w-12 bg-orange-500/20 rounded-2xl flex items-center justify-center mb-3"><Music className="h-6 w-6 text-orange-400" /></div>
-                           <span className="text-sm font-semibold text-white">Upload Podcast Clip</span>
-                           <span className="text-xs text-slate-400 mt-2">Max 50MB (mp3, wav, m4a)</span>
+                           <Music className="h-8 w-8 text-slate-400 mb-2" />
+                           <span className="font-semibold text-slate-700">Upload Podcast</span>
+                           <span className="text-xs text-slate-500">Max 50MB</span>
                            <input type="file" accept="audio/*" onChange={handleAudioUpload} className="hidden" />
                          </label>
                        )}
                    </div>
-                   {inputText && !isTranscribing && <div className="mt-4 p-3 bg-emerald-500/20 text-emerald-300 text-xs rounded-lg border border-emerald-500/30 flex items-center gap-2 font-semibold"><Check className="h-3 w-3" /> Successfully transcribed!</div>}
+                   {inputText && !isTranscribing && <div className="mt-3 p-2 bg-emerald-50 text-emerald-700 text-xs rounded border border-emerald-200 flex items-center gap-2 font-semibold"><Check className="h-3 w-3" /> Transcribed!</div>}
                  </>
                )}
              </div>
-             <button onClick={handleOptimize} disabled={isLoading || !inputText} style={{ background: isLoading ? 'linear-gradient(135deg, rgba(100,100,100,0.5) 0%, rgba(80,80,80,0.5) 100%)' : `linear-gradient(135deg, ${algorizzAccentColor} 0%, #ff6b3d 100%)` }} className={`flex items-center justify-center gap-3 w-full py-4 rounded-xl text-white font-bold transition-all shadow-lg hover:shadow-xl hover:shadow-orange-500/20 transform active:scale-95`}>
+             <button onClick={handleOptimize} disabled={isLoading || !inputText} style={{ backgroundColor: isLoading ? '#e2e8f0' : algorizzAccentColor }} className={`flex items-center justify-center gap-2 w-full py-3 rounded-lg text-white font-bold transition-all ${isLoading ? 'cursor-wait' : 'hover:shadow-md'}`}>
                {isLoading ? <><RefreshCw className="animate-spin h-5 w-5" /> <span>Optimising...</span></> : <>Optimise Content <ArrowRight className="h-5 w-5" /></>}
              </button>
-             {error && <div className="mt-4 p-4 bg-red-500/20 rounded-xl border border-red-500/30 text-red-300 text-xs flex flex-col gap-2 font-medium"><div className="flex items-center gap-2"><AlertCircle className="h-4 w-4" /> Error:</div><div className="ml-6 font-mono whitespace-pre-wrap break-all">{error}</div></div>}
+             {error && <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-200 text-red-700 text-xs"><AlertCircle className="h-3 w-3 inline mr-1" /> {error}</div>}
            </div>
          </div>
 
 
            {/* RIGHT COLUMN: Output */}
-           <div className="lg:col-span-8 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md rounded-2xl border border-white/20 overflow-hidden flex flex-col h-[800px]">
+           <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col h-[800px]">
                {/* Toolbar */}
-               <div className="flex items-center justify-between p-5 border-b border-white/20 bg-white/5">
-                   <div className="flex gap-2 bg-white/10 p-1.5 rounded-xl border border-white/20">
-                       <button onClick={() => setActiveTab('preview')} className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'preview' ? 'bg-white/20 text-white border border-white/30 shadow-lg' : 'text-slate-300 hover:text-white'}`}><Globe className="h-4 w-4 inline mr-2" /> Preview</button>
-                       <button onClick={() => setActiveTab('code')} className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'code' ? 'bg-white/20 text-white border border-white/30 shadow-lg' : 'text-slate-300 hover:text-white'}`}><Code className="h-4 w-4 inline mr-2" /> HTML Code</button>
+               <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50">
+                   <div className="flex gap-2">
+                       <button onClick={() => setActiveTab('preview')} className={`px-3 py-2 rounded-lg text-sm font-semibold ${activeTab === 'preview' ? 'bg-white text-slate-900 border border-slate-200' : 'text-slate-600 hover:bg-white'}`}><Globe className="h-4 w-4" /></button>
+                       <button onClick={() => setActiveTab('code')} className={`px-3 py-2 rounded-lg text-sm font-semibold ${activeTab === 'code' ? 'bg-white text-slate-900 border border-slate-200' : 'text-slate-600 hover:bg-white'}`}><Code className="h-4 w-4" /></button>
                    </div>
                    <div className="flex items-center gap-2">
                         {optimizedContent && (
                           <button
                            onClick={handleSaveToLibrary}
                            disabled={isSaving}
-                           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 disabled:from-slate-500 disabled:to-slate-600 transition-all shadow-lg"
+                           className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-white hover:shadow-md disabled:opacity-50 transition-all"
+                           style={{ backgroundColor: algorizzAccentColor }}
                           >
                            {isSaving ? <RefreshCw className="h-4 w-4 animate-spin"/> : <Save className="h-4 w-4"/>}
-                           Save
                           </button>
                         )}
                        {optimizedContent && (
                          <>
-                           <button onClick={handleDownload} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all"><Download className="h-4 w-4" /> Download</button>
-                           <button onClick={() => setShowPublishModal(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all"><UploadCloud className="h-4 w-4" /> Publish</button>
+                           <button onClick={handleDownload} className="px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-all"><Download className="h-4 w-4" /></button>
+                           <button onClick={() => setShowPublishModal(true)} className="px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-all"><UploadCloud className="h-4 w-4" /></button>
                          </>
                        )}
-                       {optimizedContent && <button onClick={copyToClipboard} className="flex items-center gap-2 text-sm text-slate-300 hover:text-white transition-all px-3 py-2">{copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}</button>}
+                       {optimizedContent && <button onClick={copyToClipboard} className="px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-all">{copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}</button>}
                    </div>
                </div>
                {/* Canvas */}
-               <div className="flex-grow overflow-y-auto p-8 bg-white/5 relative">
+               <div className="flex-grow overflow-y-auto p-6 bg-white">
                    <style>{aeoStyles}</style>
-                   {error && <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-black/40 backdrop-blur-sm z-20"><div className="bg-red-500/20 border border-red-500/50 p-8 rounded-2xl max-w-md"><AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" /><h3 className="text-lg font-bold text-red-300 mb-2">Optimisation Failed</h3><p className="text-red-300/80 mb-6 text-sm">{error}</p><button onClick={() => setError(null)} className="px-6 py-2 bg-white/20 border border-white/30 text-white rounded-lg font-medium hover:bg-white/30 transition-all">Dismiss</button></div></div>}
-                   {!optimizedContent && !isLoading && !headerImage && !error && <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 p-8 text-center"><div className="w-20 h-20 bg-white/10 rounded-3xl flex items-center justify-center mb-6 border border-white/20"><BrainCircuit className="h-10 w-10 text-slate-500" /></div><p className="text-lg font-semibold">Ready to optimize</p><p className="text-sm text-slate-500 mt-1">Paste content to get started</p></div>}
-                   {isLoading && <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 backdrop-blur-sm z-10"><div className="animate-spin rounded-full h-14 w-14 border-4 border-white/20 border-t-orange-500 mb-6"></div><p className="text-white font-semibold text-lg">Optimising your content...</p><p className="text-slate-300 text-sm mt-2">This may take a moment</p></div>}
-                   {activeTab === 'preview' && (optimizedContent || headerImage) && (
-                       <div className="aeo-preview-container animate-in fade-in duration-500 max-w-3xl mx-auto">
-                           {headerImage && <img src={headerImage} alt="AI Header" className="aeo-featured-image" />}
+                   {error && <div className="flex flex-col items-center justify-center h-full p-8 text-center"><AlertCircle className="h-12 w-12 text-red-600 mx-auto mb-4" /><h3 className="text-lg font-bold text-red-700 mb-2">Optimisation Failed</h3><p className="text-red-600 mb-6 text-sm">{error}</p></div>}
+                   {!optimizedContent && !isLoading && !headerImage && !error && <div className="flex flex-col items-center justify-center h-full text-slate-400 text-center"><BrainCircuit className="h-12 w-12 mb-4 opacity-30" /><p>Preview will appear here</p></div>}
+                   {isLoading && <div className="flex flex-col items-center justify-center h-full"><div className="animate-spin rounded-full h-10 w-10 border-2 border-slate-300 border-t-slate-900 mb-3"></div><p className="text-slate-600 text-sm">Optimising...</p></div>}
+                   {activeTab === 'preview' && optimizedContent && (
+                       <div className="aeo-preview-container max-w-2xl">
+                           {headerImage && <img src={headerImage} alt="Header" className="aeo-featured-image" />}
                            {optimizedContent && <div dangerouslySetInnerHTML={{ __html: optimizedContent }} />}
                        </div>
                    )}
-                   {optimizedContent && activeTab === 'code' && (
-                       <div className="animate-in fade-in duration-500">
-                           <pre className="text-xs bg-slate-950 text-slate-50 p-4 rounded-xl overflow-x-auto font-mono leading-relaxed whitespace-pre-wrap border border-white/10">{`<style>\n/* BRAND STYLES */\nbody { font-family: '${brandFont}', sans-serif; color: #33475b; }\n</style>\n\n${headerImage ? `<img src="[INSERT_IMAGE_URL]" class="aeo-featured-image">` : ''}\n\n${optimizedContent}`}</pre>
-                       </div>
+                   {activeTab === 'code' && optimizedContent && (
+                       <pre className="text-xs bg-slate-50 text-slate-900 p-3 rounded-lg overflow-x-auto font-mono border border-slate-200">{optimizedContent.substring(0, 500)}...</pre>
                    )}
                </div>
            </div>
@@ -1405,34 +1376,32 @@ ${optimizedContent}
 
        {/* SETTINGS MODAL */}
        {showSettings && (
-         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-md">
-           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-white/20">
-             <div className="p-6 border-b border-white/20 flex justify-between items-center bg-black/30">
-               <h3 className="font-bold text-white flex items-center gap-3 text-lg">
-                 <div className="p-2 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg">
-                   <Settings className="h-5 w-5 text-white" />
-                 </div>
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30">
+           <div className="bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden border border-slate-200">
+             <div className="p-6 border-b border-slate-200 flex justify-between items-center">
+               <h3 className="font-bold text-slate-900 flex items-center gap-3 text-lg">
+                 <Settings className="h-5 w-5" style={{ color: algorizzAccentColor }} />
                  Settings
                </h3>
-               <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-white transition-colors">
+               <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
                  <X className="h-6 w-6" />
                </button>
              </div>
              <div className="p-6 space-y-6">
                <div>
-                  <label className="block text-sm font-semibold text-white mb-2">Google Gemini API Key</label>
-                  <p className="text-xs text-slate-400 mb-3">System Key: {defaultApiKey ? "✓ Loaded" : "✗ Missing"}</p>
-                  <input type="password" placeholder="Override with AIzaSy..." value={customApiKey} onChange={(e) => setCustomApiKey(e.target.value)} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-500 focus:bg-white/20 focus:border-white/40 focus:ring-0 transition-all"/>
+                  <label className="block text-sm font-semibold text-slate-900 mb-2">Google Gemini API Key</label>
+                  <p className="text-xs text-slate-600 mb-3">System Key: {defaultApiKey ? "✓ Loaded" : "✗ Missing"}</p>
+                  <input type="password" placeholder="Override with AIzaSy..." value={customApiKey} onChange={(e) => setCustomApiKey(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 transition-all"/>
                </div>
-               <div className="p-4 bg-slate-900/50 rounded-lg border border-white/10 h-40 overflow-y-auto">
-                  <div className="flex items-center gap-2 mb-3 text-xs font-semibold text-orange-400 pb-2 border-b border-white/10">
+               <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 h-40 overflow-y-auto">
+                  <div className="flex items-center gap-2 mb-3 text-xs font-semibold text-slate-700 pb-2 border-b border-slate-200">
                     <Terminal className="h-4 w-4"/> Debug Console
                   </div>
                   <div className="space-y-1">
-                    {debugLog.slice(0, 15).map((log, i) => (<div key={i} className={`text-[11px] font-mono ${log.includes('[ERROR]') ? 'text-red-400' : 'text-slate-300'}`}>{log}</div>))}
+                    {debugLog.slice(0, 15).map((log, i) => (<div key={i} className={`text-[11px] font-mono ${log.includes('[ERROR]') ? 'text-red-600' : 'text-slate-600'}`}>{log}</div>))}
                   </div>
                </div>
-               <button onClick={() => setShowSettings(false)} className="w-full py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-red-600 transition-all">Save & Close</button>
+               <button onClick={() => setShowSettings(false)} className="w-full py-3 text-white rounded-lg font-semibold hover:shadow-md transition-all" style={{ backgroundColor: algorizzAccentColor }}>Save & Close</button>
              </div>
            </div>
          </div>
@@ -1441,22 +1410,22 @@ ${optimizedContent}
 
        {/* PUBLISH MODAL */}
        {showPublishModal && (
-         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-md">
-           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-white/20">
-             <div className="p-6 border-b border-white/20 flex justify-between items-center bg-black/30">
-               <h3 className="font-bold text-white flex items-center gap-3 text-lg"><div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg"><UploadCloud className="h-5 w-5 text-white" /></div> Publish Content</h3>
-               <button onClick={() => setShowPublishModal(false)} className="text-slate-400 hover:text-white transition-colors"><X className="h-6 w-6" /></button>
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30">
+           <div className="bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden border border-slate-200">
+             <div className="p-6 border-b border-slate-200 flex justify-between items-center">
+               <h3 className="font-bold text-slate-900 flex items-center gap-3 text-lg"><UploadCloud className="h-5 w-5" style={{ color: algorizzAccentColor }} /> Publish Content</h3>
+               <button onClick={() => setShowPublishModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors"><X className="h-6 w-6" /></button>
              </div>
              <div className="p-6 space-y-5">
                <div>
-                 <label className="block text-sm font-semibold text-white mb-3">Select Platform</label>
-                 <select value={cmsType} onChange={(e) => setCmsType(e.target.value)} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:bg-white/20 focus:border-white/40 focus:ring-0 transition-all">
-                   <option value="wordpress" className="bg-slate-800">WordPress</option>
-                   <option value="hubspot" className="bg-slate-800">HubSpot</option>
-                   <option value="webflow" className="bg-slate-800">Webflow</option>
+                 <label className="block text-sm font-semibold text-slate-900 mb-3">Select Platform</label>
+                 <select value={cmsType} onChange={(e) => setCmsType(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 transition-all">
+                   <option value="wordpress" className="bg-white">WordPress</option>
+                   <option value="hubspot" className="bg-white">HubSpot</option>
+                   <option value="webflow" className="bg-white">Webflow</option>
                  </select>
                </div>
-               <button onClick={handlePublish} disabled={isPublishing} className="w-full py-3 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:from-slate-500 disabled:to-slate-600 text-white rounded-lg font-semibold transition-all flex justify-center items-center gap-2">
+               <button onClick={handlePublish} disabled={isPublishing} className="w-full py-3 text-white rounded-lg font-semibold transition-all flex justify-center items-center gap-2 hover:shadow-md disabled:opacity-50" style={{ backgroundColor: algorizzAccentColor }}>
                  {isPublishing ? <RefreshCw className="h-4 w-4 animate-spin"/> : null}
                  {isPublishing ? 'Publishing...' : 'Publish Now'}
                </button>
