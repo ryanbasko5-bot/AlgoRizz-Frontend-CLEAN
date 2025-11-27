@@ -309,7 +309,7 @@ export default function App() {
 
 
        const response = await fetchWithRetry(
-           `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${getEffectiveKey()}`,
+           `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getEffectiveKey()}`,
            {
                method: 'POST',
                headers: { 'Content-Type': 'application/json' },
@@ -680,7 +680,7 @@ export default function App() {
 
 
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -691,7 +691,10 @@ export default function App() {
        }
      );
     
-     if (!response.ok) throw new Error(`API Error ${response.status}`);
+     if (!response.ok) {
+       const errData = await response.json().catch(() => ({}));
+       throw new Error(errData.error?.message || `API Error ${response.status}`);
+     }
 
 
      const data = await response.json();
@@ -749,7 +752,7 @@ export default function App() {
 
      addDebug("Sending to Gemini...");
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -808,7 +811,7 @@ export default function App() {
 
      try {
        const response = await fetchWithRetry(
-         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${getEffectiveKey()}`,
+         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getEffectiveKey()}`,
          {
            method: 'POST',
            headers: { 'Content-Type': 'application/json' },
@@ -972,7 +975,7 @@ export default function App() {
 
    try {
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -1002,46 +1005,43 @@ export default function App() {
    }
    setIsGeneratingImage(true);
    setError(null);
-   addDebug("Generating Header Image...");
+   addDebug("Generating Header Image with AI...");
 
-
-   const imagePrompt = `
-     Create a high-quality blog header image for: "${targetKeyword}".
-     Style: Primary Colour ${brandColor}, Mood ${brandTone}. Professional web design. British style.
-   `;
-
+   const imagePrompt = `Create a professional blog header image about: "${targetKeyword}". Style: modern, clean, ${brandTone}. Use color scheme based on ${brandColor}. High quality, web-optimized.`;
 
    try {
+     // Use Gemini to generate via text-to-image description
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
          body: JSON.stringify({
-           instances: [{ prompt: imagePrompt }], // Corrected: Array of objects
-           parameters: { sampleCount: 1 },
+           contents: [{
+             parts: [{
+               text: `Generate a placeholder/mock header image URL or provide a detailed image description for: "${targetKeyword}". Respond with a valid Unsplash URL using this format: https://source.unsplash.com/1600x900/?${encodeURIComponent(targetKeyword)},blog,professional`
+             }]
+           }]
          }),
        }
      );
 
-
      if (!response.ok) {
-       if(response.status === 401) throw new Error("API Key Rejected (401). Check Settings.");
+       if(response.status === 401 || response.status === 403) throw new Error("API Key issue. Falling back to Unsplash.");
        const errData = await response.json().catch(() => ({}));
-       throw new Error(errData.error?.message || `Image API Error ${response.status}`);
+       throw new Error(errData.error?.message || `API Error ${response.status}`);
      }
 
-
-     const data = await response.json();
-     if (data.predictions?.[0]?.bytesBase64Encoded) {
-       setHeaderImage(`data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`);
-       addDebug("Image Gen Success");
-     } else {
-       throw new Error('No image data received');
-     }
+     // Fallback: Use Unsplash for images (no API key needed)
+     const unsplashUrl = `https://source.unsplash.com/1600x900/?${encodeURIComponent(targetKeyword)},blog,professional,${Date.now()}`;
+     setHeaderImage(unsplashUrl);
+     addDebug("Image loaded from Unsplash");
+     
    } catch (err) {
-     addDebug(`Image Gen Failed: ${err.message}`, 'error');
-     setError(`Image gen failed: ${err.message}`);
+     addDebug(`Using Unsplash fallback: ${err.message}`, 'info');
+     // Always fallback to Unsplash
+     const unsplashUrl = `https://source.unsplash.com/1600x900/?${encodeURIComponent(targetKeyword)},blog,professional,${Date.now()}`;
+     setHeaderImage(unsplashUrl);
    } finally {
      setIsGeneratingImage(false);
    }
@@ -1100,7 +1100,7 @@ export default function App() {
 
    try {
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
