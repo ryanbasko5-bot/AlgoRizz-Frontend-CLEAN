@@ -317,7 +317,7 @@ export default function App() {
 
 
        const response = await fetchWithRetry(
-           `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getEffectiveKey()}`,
+           `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
            {
                method: 'POST',
                headers: { 'Content-Type': 'application/json' },
@@ -691,7 +691,7 @@ export default function App() {
      `;
 
      const aiResponse = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -829,7 +829,7 @@ export default function App() {
 
 
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -907,7 +907,7 @@ export default function App() {
 
      addDebug("Sending to Gemini...");
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -966,7 +966,7 @@ export default function App() {
 
      try {
        const response = await fetchWithRetry(
-         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getEffectiveKey()}`,
+         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
          {
            method: 'POST',
            headers: { 'Content-Type': 'application/json' },
@@ -1152,7 +1152,7 @@ export default function App() {
 
    try {
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -1189,7 +1189,7 @@ export default function App() {
    try {
      // Use Gemini to generate via text-to-image description
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -1278,7 +1278,7 @@ export default function App() {
 
    try {
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
