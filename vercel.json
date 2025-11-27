@@ -1,4 +1,7 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "env": {
+    "VITE_GOOGLE_API_KEY": "@vite_google_api_key"
+  }
 }
