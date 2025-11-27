@@ -14,7 +14,9 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'algorizz-app';
 
 
 const defaultApiKey = import.meta.env.VITE_GOOGLE_API_KEY || "";
-const algorizzAccentColor = "#ff7a59"; // Used for UI buttons, loading states, etc.
+const algorizzAccentColor = "#FF1493"; // Hot pink from logo
+const algorizzSecondaryColor = "#00E5FF"; // Cyan from logo
+const algorizzYellowColor = "#FFFF00"; // Yellow accent from logo
 const algorizzLogoPath = "/files/696b9b03-71ec-432f-9c09-7f06b5d91942.jpeg";
 
 
@@ -137,7 +139,7 @@ export default function App() {
  const [debugLog, setDebugLog] = useState([]);
  const [showSidebar, setShowSidebar] = useState(false);
  const [customLogo, setCustomLogo] = useState(localStorage.getItem('algorizz_customLogo') || '');
- const [appBackgroundColor, setAppBackgroundColor] = useState('#f8fafc');
+ const [appBackgroundColor, setAppBackgroundColor] = useState('#1a0b2e');
 
 
  // Content State
@@ -168,13 +170,15 @@ export default function App() {
  // Brand State
  const [websiteUrl, setWebsiteUrl] = useState('');
  const [isAnalyzingBrand, setIsAnalyzingBrand] = useState(false);
- const [brandColor, setBrandColor] = useState(localStorage.getItem('algorizz_brandColor') || '#33475b');
- const [colorPalette, setColorPalette] = useState(JSON.parse(localStorage.getItem('algorizz_colorPalette') || '["#33475b", "#ff7a59", "#ffffff"]'));
+ const [analysisStep, setAnalysisStep] = useState('');
+ const [brandColor, setBrandColor] = useState(localStorage.getItem('algorizz_brandColor') || '#FF1493');
+ const [colorPalette, setColorPalette] = useState(JSON.parse(localStorage.getItem('algorizz_colorPalette') || '["#FF1493", "#00E5FF", "#FFFF00", "#FF10F0"]'));
  const [brandFont, setBrandFont] = useState(localStorage.getItem('algorizz_brandFont') || 'Helvetica Neue');
  const [logoUrl, setLogoUrl] = useState(''); // Defaulted to empty string for generated content
  const [brandTone, setBrandTone] = useState(localStorage.getItem('algorizz_brandTone') || 'Professional and Direct');
  const [savedBrandVoice, setSavedBrandVoice] = useState(localStorage.getItem('algorizz_brandVoice') || '');
  const [websiteStyleGuide, setWebsiteStyleGuide] = useState('');
+ const [websiteCssStyles, setWebsiteCssStyles] = useState('');
  const [isScanningStyle, setIsScanningStyle] = useState(false);
  const [headerImage, setHeaderImage] = useState(null);
  const [showExtras, setShowExtras] = useState(false);
@@ -622,7 +626,7 @@ export default function App() {
    if (!websiteUrl) return;
    setIsScanningStyle(true);
    setError(null);
-   addDebug(`Scanning website style: ${websiteUrl}`);
+   addDebug(`Scanning website structure & styles: ${websiteUrl}`);
 
    try {
      const response = await fetchWithRetry(websiteUrl, { method: 'GET' });
@@ -632,29 +636,53 @@ export default function App() {
      const parser = new DOMParser();
      const doc = parser.parseFromString(html, 'text/html');
 
-     // Extract sample content from blog posts/articles
+     // Extract CSS styles from the page
+     const styleElements = doc.querySelectorAll('style');
+     let extractedCss = '';
+     styleElements.forEach(style => {
+       extractedCss += style.textContent + '\n';
+     });
+
+     // Extract inline styles and class names from article/blog content
+     const articleElements = doc.querySelectorAll('article, .post, .blog-post, [class*="content"], main');
+     const htmlStructure = [];
      const contentSamples = [];
-     const articleElements = doc.querySelectorAll('article, .post, .blog-post, [class*="content"]');
+     
      articleElements.forEach((el, idx) => {
        if (idx < 3 && el.textContent.length > 200) {
          contentSamples.push(el.textContent.substring(0, 500));
+         // Capture HTML structure (headings, paragraphs, lists)
+         const structure = {
+           headings: Array.from(el.querySelectorAll('h1, h2, h3, h4')).map(h => h.tagName.toLowerCase()),
+           paragraphCount: el.querySelectorAll('p').length,
+           hasLists: el.querySelectorAll('ul, ol').length > 0,
+           classes: el.className
+         };
+         htmlStructure.push(structure);
        }
      });
 
+     // Store the extracted CSS
+     setWebsiteCssStyles(extractedCss);
+     addDebug(`Extracted ${extractedCss.length} characters of CSS`);
+
      const sampleText = contentSamples.join('\n\n');
 
-     // Analyze writing style with AI
+     // Analyze writing style and structure with AI
      const stylePrompt = `
-       Analyze the writing style of this website content and provide a detailed style guide.
+       Analyze the writing style and HTML structure of this website content.
        Return valid JSON with:
        {
          "tone": "describe the tone (e.g., conversational, formal, technical)",
          "sentenceStructure": "describe sentence length and complexity",
          "vocabulary": "describe vocabulary level and technical terms usage",
          "formatting": "describe paragraph structure, use of headings, lists",
-         "voicePattern": "describe narrative voice (first person, third person, etc.)"
+         "voicePattern": "describe narrative voice (first person, third person, etc.)",
+         "htmlStructure": "describe HTML patterns: heading hierarchy, paragraph length, use of lists, etc."
        }
 
+       HTML Structure Detected: ${JSON.stringify(htmlStructure)}
+       
        Content samples:
        ${sampleText}
      `;
@@ -676,9 +704,9 @@ export default function App() {
      const data = await aiResponse.json();
      const styleData = safeJsonParse(data.candidates?.[0]?.content?.parts?.[0]?.text);
      
-     const styleGuide = `Tone: ${styleData.tone}. Sentence Structure: ${styleData.sentenceStructure}. Vocabulary: ${styleData.vocabulary}. Formatting: ${styleData.formatting}. Voice: ${styleData.voicePattern}.`;
+     const styleGuide = `Tone: ${styleData.tone}. Sentence Structure: ${styleData.sentenceStructure}. Vocabulary: ${styleData.vocabulary}. Formatting: ${styleData.formatting}. Voice: ${styleData.voicePattern}. HTML Structure: ${styleData.htmlStructure || 'Standard blog format'}.`;
      setWebsiteStyleGuide(styleGuide);
-     addDebug("Website style captured successfully");
+     addDebug(`Website style & CSS captured (${extractedCss.length} chars)`);
 
    } catch (err) {
      addDebug(`Style Scan Failed: ${err.message}`, 'error');
@@ -698,27 +726,70 @@ export default function App() {
      setCustomLogo(logoDataUrl);
      localStorage.setItem('algorizz_customLogo', logoDataUrl);
      
-     // Extract dominant background color from logo
+     // Extract dominant colors from logo
      const img = new Image();
      img.onload = () => {
        const canvas = document.createElement('canvas');
-       canvas.width = img.width;
-       canvas.height = img.height;
+       const maxSize = 150; // Resize for faster processing
+       const scale = Math.min(maxSize / img.width, maxSize / img.height);
+       canvas.width = img.width * scale;
+       canvas.height = img.height * scale;
        const ctx = canvas.getContext('2d');
-       ctx.drawImage(img, 0, 0);
+       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
        
-       // Sample corner pixels to detect background
-       const corners = [
-         ctx.getImageData(0, 0, 1, 1).data,
-         ctx.getImageData(img.width - 1, 0, 1, 1).data,
-         ctx.getImageData(0, img.height - 1, 1, 1).data,
-         ctx.getImageData(img.width - 1, img.height - 1, 1, 1).data
-       ];
+       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+       const pixels = imageData.data;
+       const colorMap = {};
        
-       // Average the corner colors
-       const avgR = Math.round(corners.reduce((sum, c) => sum + c[0], 0) / 4);
-       const avgG = Math.round(corners.reduce((sum, c) => sum + c[1], 0) / 4);
-       const avgB = Math.round(corners.reduce((sum, c) => sum + c[2], 0) / 4);
+       // Count color frequency (skip near-white and transparent pixels)
+       for (let i = 0; i < pixels.length; i += 4) {
+         const r = pixels[i];
+         const g = pixels[i + 1];
+         const b = pixels[i + 2];
+         const a = pixels[i + 3];
+         
+         // Skip transparent and very light colors (likely background)
+         if (a < 50 || (r > 240 && g > 240 && b > 240)) continue;
+         
+         // Round colors to reduce similar shades
+         const rr = Math.round(r / 10) * 10;
+         const gg = Math.round(g / 10) * 10;
+         const bb = Math.round(b / 10) * 10;
+         const key = `${rr},${gg},${bb}`;
+         
+         colorMap[key] = (colorMap[key] || 0) + 1;
+       }
+       
+       // Find top colors
+       const sortedColors = Object.entries(colorMap)
+         .sort((a, b) => b[1] - a[1])
+         .slice(0, 4)
+         .map(([color]) => {
+           const [r, g, b] = color.split(',').map(Number);
+           return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+         });
+       
+       if (sortedColors.length > 0) {
+         setColorPalette(sortedColors);
+         setBrandColor(sortedColors[0]);
+         addDebug(`Logo colors extracted: ${sortedColors.join(', ')}`);
+       }
+       
+       // Detect background from edges (for app background)
+       const edgePixels = [];
+       for (let x = 0; x < canvas.width; x++) {
+         edgePixels.push(ctx.getImageData(x, 0, 1, 1).data); // Top edge
+         edgePixels.push(ctx.getImageData(x, canvas.height - 1, 1, 1).data); // Bottom edge
+       }
+       for (let y = 0; y < canvas.height; y++) {
+         edgePixels.push(ctx.getImageData(0, y, 1, 1).data); // Left edge
+         edgePixels.push(ctx.getImageData(canvas.width - 1, y, 1, 1).data); // Right edge
+       }
+       
+       // Average edge colors
+       const avgR = Math.round(edgePixels.reduce((sum, c) => sum + c[0], 0) / edgePixels.length);
+       const avgG = Math.round(edgePixels.reduce((sum, c) => sum + c[1], 0) / edgePixels.length);
+       const avgB = Math.round(edgePixels.reduce((sum, c) => sum + c[2], 0) / edgePixels.length);
        
        const detectedBg = `rgb(${avgR}, ${avgG}, ${avgB})`;
        setAppBackgroundColor(detectedBg);
@@ -734,6 +805,7 @@ export default function App() {
    if (!websiteUrl) return;
    setIsAnalyzingBrand(true);
    setError(null);
+   setAnalysisStep('Fetching brand logo...');
    addDebug(`Analysing URL: ${websiteUrl}`);
   
    try {
@@ -742,6 +814,7 @@ export default function App() {
      setLogoUrl(`https://logo.clearbit.com/${cleanDomain}`);
 
 
+     setAnalysisStep('Extracting brand colours...');
      const prompt = `
        Analyse brand identity for: ${websiteUrl}.
        Return valid JSON with:
@@ -784,6 +857,7 @@ export default function App() {
      if (brandData.tone) setBrandTone(brandData.tone);
      addDebug("URL Analysis Success");
      
+     setAnalysisStep('Scanning website style...');
      // Auto-scan writing style
      await handleScanWebsiteStyle();
 
@@ -793,6 +867,7 @@ export default function App() {
      setError(`Brand Analysis Failed: ${e.message}`);
    } finally {
      setIsAnalyzingBrand(false);
+     setAnalysisStep('');
    }
  };
 
@@ -805,6 +880,7 @@ export default function App() {
 
    setIsAnalyzingBrand(true);
    setError(null);
+   setAnalysisStep('Processing image...');
    // Image upload is fast due to resize, set strict 12s estimate
    setTimeLeft(12);
    setTotalEstTime(12);
@@ -817,6 +893,7 @@ export default function App() {
      const base64Data = resizedDataUrl.split(',')[1];
 
 
+     setAnalysisStep('Extracting brand colours...');
      const prompt = `
        Analyse this brand image. Return valid JSON:
        {
@@ -869,6 +946,7 @@ export default function App() {
      setError(`Image Analysis Failed: ${err.message}`);
    } finally {
      setIsAnalyzingBrand(false);
+     setAnalysisStep('');
      if (fileInputRef.current) fileInputRef.current.value = '';
    }
  };
@@ -1169,7 +1247,7 @@ export default function App() {
 
      Use the Brand Tone: ${brandTone}.
      ${savedBrandVoice ? `Brand Voice Guidelines: ${savedBrandVoice}` : ''}
-     ${websiteStyleGuide ? `Website Style Guide to Match: ${websiteStyleGuide}` : ''}
+     ${websiteStyleGuide ? `\n### CRITICAL: MATCH WEBSITE STYLE EXACTLY\nYou MUST match this website's style down to every detail:\n${websiteStyleGuide}\n\nMirror their HTML structure, heading patterns, paragraph lengths, list usage, and formatting precisely. The output should look like it was written by the same person who wrote their existing content.` : ''}
    `;
 
 
@@ -1279,7 +1357,9 @@ ${optimizedContent}
    addDebug(`Publishing to HubSpot (Portal: ${hubspotPortalId})...`);
 
    try {
-     const htmlContent = `<style>${aeoStyles}</style>${headerImage ? `<img src="${headerImage}" class="aeo-featured-image" alt="Header" />` : ''}${optimizedContent}`;
+     // Merge website CSS with AEO styles for seamless integration
+     const combinedStyles = websiteCssStyles ? `${websiteCssStyles}\n\n/* AEO Enhancements */\n${aeoStyles}` : aeoStyles;
+     const htmlContent = `<style>${combinedStyles}</style>${headerImage ? `<img src="${headerImage}" class="aeo-featured-image" alt="Header" />` : ''}${optimizedContent}`;
 
      const blogPostPayload = {
        name: targetKeyword || 'Optimised AEO Post',
@@ -1356,7 +1436,7 @@ ${optimizedContent}
 
 
  return (
-   <div className="min-h-screen text-slate-900 font-sans" style={{ backgroundColor: appBackgroundColor }}>
+   <div className="min-h-screen text-white font-sans" style={{ backgroundColor: appBackgroundColor }}>
      {/* SIDEBAR MENU */}
      {showSidebar && (
        <div className="fixed inset-0 z-50 flex">
@@ -1364,20 +1444,21 @@ ${optimizedContent}
          <div className="absolute inset-0 bg-black/30" onClick={() => setShowSidebar(false)}></div>
          
          {/* Sidebar */}
-         <div className="relative w-80 bg-white shadow-xl flex flex-col">
-           <div className="p-6 border-b border-slate-200">
-             <div className="flex items-center justify-between mb-6">
+         <div className="relative w-80 flex flex-col" style={{ backgroundColor: '#0d0520', boxShadow: `0 0 30px rgba(255, 20, 147, 0.3), 0 0 60px rgba(0, 229, 255, 0.2)` }}>
+           <div className="p-6" style={{ borderBottom: `2px solid rgba(255, 20, 147, 0.3)` }}>
+             <div className="flex items-center justify-between mb-4">
                <div className="flex items-center gap-3">
                  {customLogo ? (
                    <img src={customLogo} alt="Logo" className="h-10 w-auto" />
                  ) : (
-                   <h1 className="text-2xl font-bold" style={{ color: algorizzAccentColor }}>AlgoRizz</h1>
+                   <h1 className="text-2xl font-bold" style={{ fontFamily: "'Press Start 2P', monospace", color: algorizzAccentColor, textShadow: `0 0 20px ${algorizzAccentColor}, 0 0 40px ${algorizzAccentColor}` }}>AlgoRizz</h1>
                  )}
                </div>
-               <button onClick={() => setShowSidebar(false)} className="p-2 hover:bg-slate-100 rounded-lg transition-all">
-                 <X className="h-5 w-5 text-slate-600" />
+               <button onClick={() => setShowSidebar(false)} className="p-2 rounded-lg transition-all" style={{ backgroundColor: 'rgba(255, 20, 147, 0.1)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 20, 147, 0.2)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 20, 147, 0.1)'}>
+                 <X className="h-5 w-5" style={{ color: algorizzAccentColor }} />
                </button>
              </div>
+             <p className="text-xs font-bold mb-4 leading-relaxed" style={{ color: algorizzSecondaryColor, textShadow: '0 0 10px rgba(0, 229, 255, 0.5)' }}>Transform content into AI-ready answers that rank on ChatGPT, Perplexity & Google</p>
              {keyStatus === 'valid' && <span className="text-xs font-bold text-emerald-600 flex items-center gap-1"><ShieldCheck className="h-4 w-4" /> API Active</span>}
              {keyStatus === 'invalid' && <span className="text-xs font-bold text-red-600 flex items-center gap-1 animate-pulse"><ShieldAlert className="h-4 w-4" /> API Error</span>}
            </div>
@@ -1385,21 +1466,30 @@ ${optimizedContent}
            <nav className="flex-grow p-4 space-y-2">
              <button
                onClick={() => { setView('editor'); setShowSidebar(false); }}
-               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-sm transition-all ${view === 'editor' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}
+               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-sm transition-all`}
+               style={view === 'editor' ? { backgroundColor: 'rgba(255, 20, 147, 0.2)', color: algorizzAccentColor, boxShadow: `0 0 15px rgba(255, 20, 147, 0.3)` } : { color: '#a0aec0' }}
+               onMouseEnter={(e) => { if (view !== 'editor') e.currentTarget.style.backgroundColor = 'rgba(255, 20, 147, 0.05)'; }}
+               onMouseLeave={(e) => { if (view !== 'editor') e.currentTarget.style.backgroundColor = 'transparent'; }}
              >
                <Wand2 className="h-5 w-5" />
                <span>Editor</span>
              </button>
              <button
                onClick={() => { setView('library'); setShowSidebar(false); }}
-               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-sm transition-all ${view === 'library' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}
+               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-sm transition-all`}
+               style={view === 'library' ? { backgroundColor: 'rgba(0, 229, 255, 0.2)', color: algorizzSecondaryColor, boxShadow: `0 0 15px rgba(0, 229, 255, 0.3)` } : { color: '#a0aec0' }}
+               onMouseEnter={(e) => { if (view !== 'library') e.currentTarget.style.backgroundColor = 'rgba(0, 229, 255, 0.05)'; }}
+               onMouseLeave={(e) => { if (view !== 'library') e.currentTarget.style.backgroundColor = 'transparent'; }}
              >
                <Library className="h-5 w-5" />
                <span>Library</span>
              </button>
              <button
                onClick={() => { setShowSettings(true); setShowSidebar(false); }}
-               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-sm text-slate-600 hover:bg-slate-50 transition-all"
+               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-sm transition-all"
+               style={{ color: '#a0aec0' }}
+               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 0, 0.05)'}
+               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
              >
                <Settings className="h-5 w-5" />
                <span>Settings</span>
@@ -1418,14 +1508,14 @@ ${optimizedContent}
        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
          <button onClick={() => setShowSidebar(true)} className="flex items-center gap-3 hover:bg-slate-50 px-3 py-2 rounded-lg transition-all">
            <div className="flex flex-col gap-1">
-             <div className="w-5 h-0.5 bg-slate-700 rounded"></div>
-             <div className="w-5 h-0.5 bg-slate-700 rounded"></div>
-             <div className="w-5 h-0.5 bg-slate-700 rounded"></div>
+             <div className="w-5 h-0.5 rounded" style={{ backgroundColor: algorizzAccentColor, boxShadow: `0 0 5px ${algorizzAccentColor}` }}></div>
+             <div className="w-5 h-0.5 rounded" style={{ backgroundColor: algorizzSecondaryColor, boxShadow: `0 0 5px ${algorizzSecondaryColor}` }}></div>
+             <div className="w-5 h-0.5 rounded" style={{ backgroundColor: algorizzYellowColor, boxShadow: `0 0 5px ${algorizzYellowColor}` }}></div>
            </div>
            {customLogo ? (
              <img src={customLogo} alt="Logo" className="h-8 w-auto" />
            ) : (
-             <h1 className="text-xl font-bold" style={{ color: algorizzAccentColor }}>AlgoRizz</h1>
+             <h1 className="text-xl font-bold" style={{ fontFamily: "'Press Start 2P', monospace", color: algorizzAccentColor, textShadow: `0 0 15px ${algorizzAccentColor}` }}>AlgoRizz</h1>
            )}
          </button>
          
@@ -1444,11 +1534,11 @@ ${optimizedContent}
           <div className="min-h-[600px]">
              <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                  <div>
-                   <h2 className="text-3xl font-bold text-slate-900 mb-1">
-                     <Library className="h-6 w-6 inline mr-3" style={{ color: algorizzAccentColor }} />
+                   <h2 className="text-3xl font-bold mb-1" style={{ color: algorizzAccentColor, textShadow: `0 0 10px ${algorizzAccentColor}` }}>
+                     <Library className="h-6 w-6 inline mr-3" style={{ color: algorizzSecondaryColor }} />
                      Saved Posts
                    </h2>
-                   <p className="text-slate-600">{savedPosts.length} articles ready to deploy</p>
+                   <p style={{ color: algorizzSecondaryColor }}>{savedPosts.length} articles ready to deploy</p>
                  </div>
                  <div className="relative w-full md:w-96">
                      <Search className="absolute left-4 top-3.5 h-5 w-5 text-slate-400" />
@@ -1517,27 +1607,49 @@ ${optimizedContent}
            {/* LEFT COLUMN: Controls */}
          <div className="lg:col-span-4 flex flex-col gap-6">
            {/* Brand Settings */}
-           <div className="bg-white border border-slate-200 p-6 rounded-xl">
-             <h3 className="font-bold text-slate-900 mb-6 text-lg">
-               <Globe className="h-5 w-5 inline mr-2" style={{ color: algorizzAccentColor }} />
+           <div className="neon-card p-6 rounded-xl">
+             <h3 className="font-bold mb-6 text-lg neon-label">
+               <Globe className="h-5 w-5 inline mr-2" style={{ color: algorizzSecondaryColor, filter: `drop-shadow(0 0 5px ${algorizzSecondaryColor})` }} />
                Brand Identity
              </h3>
              <div className="space-y-4">
                {/* URL Input */}
                <div className="flex gap-2">
                  <div className="flex-grow">
-                   <label className="text-sm font-semibold text-slate-700 block mb-2">Website URL</label>
-                   <input type="text" placeholder="mysite.com" className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 outline-none" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)}/>
+                   <label className="text-sm font-semibold block mb-2" style={{ color: algorizzSecondaryColor }}>Website URL</label>
+                   <input type="text" placeholder="mysite.com" className="neon-input w-full px-4 py-2 rounded-lg" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)}/>
                  </div>
-                 <button onClick={handleAnalyzeBrandUrl} disabled={!websiteUrl || isAnalyzingBrand} className="mt-8 px-4 text-slate-700 hover:bg-slate-100 border border-slate-200 rounded-lg transition-all flex items-center gap-2 font-semibold disabled:opacity-50" title="Auto-detect from URL">
+                 <button onClick={handleAnalyzeBrandUrl} disabled={!websiteUrl || isAnalyzingBrand} className="mt-8 px-4 rounded-lg transition-all flex items-center gap-2 font-semibold disabled:opacity-50" style={{ backgroundColor: 'rgba(0, 229, 255, 0.2)', color: algorizzSecondaryColor, border: `2px solid ${algorizzSecondaryColor}`, boxShadow: `0 0 15px rgba(0, 229, 255, 0.3)` }} title="Auto-detect from URL">
                    {isAnalyzingBrand ? <RefreshCw className="h-4 w-4 animate-spin"/> : <Wand2 className="h-4 w-4"/>}
                  </button>
+                 <button onClick={() => {
+                   if (websiteUrl) {
+                     const url = websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`;
+                     window.location.href = url;
+                   }
+                 }} disabled={!websiteUrl} className="neon-button mt-8 px-4 text-white rounded-lg transition-all flex items-center gap-2 font-semibold disabled:opacity-50" title="Visit your website">
+                   <Globe className="h-4 w-4"/>
+                 </button>
                </div>
+               {/* Analysis Status */}
+               {isAnalyzingBrand && analysisStep && (
+                 <div className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-4 py-2 rounded-lg border border-slate-200">
+                   <RefreshCw className="h-4 w-4 animate-spin" style={{ color: algorizzAccentColor }} />
+                   <span>{analysisStep}</span>
+                 </div>
+               )}
+               {/* Website Style Captured Indicator */}
+               {websiteCssStyles && (
+                 <div className="flex items-center gap-2 text-xs text-emerald-600 bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-200">
+                   <Check className="h-4 w-4" />
+                   <span className="font-semibold">Website styling captured ({(websiteCssStyles.length / 1024).toFixed(1)}KB CSS)</span>
+                 </div>
+               )}
                {/* IMAGE UPLOAD */}
                <div>
                   <label className={`flex items-center justify-center gap-3 w-full p-4 border-2 border-dashed border-slate-300 rounded-lg text-sm text-slate-600 cursor-pointer hover:bg-slate-50 transition-all ${isAnalyzingBrand ? 'opacity-50 pointer-events-none' : ''}`}>
                      {isAnalyzingBrand ? <RefreshCw className="h-5 w-5 animate-spin text-slate-400" /> : <Upload className="h-5 w-5 text-slate-400" />}
-                     <span className="font-medium">{isAnalyzingBrand ? `Analysing...` : "Upload image"}</span>
+                     <span className="font-medium">{isAnalyzingBrand ? (analysisStep || 'Analysing...') : "Upload image"}</span>
                      <input type="file" accept="image/*" ref={fileInputRef} onChange={handleBrandImageUpload} className="hidden" />
                   </label>
                </div>
@@ -1575,7 +1687,7 @@ ${optimizedContent}
              </div>
            </div>
            {/* Content Input */}
-           <div className="bg-white border border-slate-200 p-6 rounded-xl flex-grow flex flex-col">
+           <div className="neon-card p-6 rounded-xl flex-grow flex flex-col">
               <div className="flex items-center gap-2 mb-4 border-b border-slate-200 pb-4">
                 <button onClick={() => setInputMode('text')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${inputMode === 'text' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}><FileText className="h-4 w-4 inline mr-1" /> Text</button>
                 <button onClick={() => setInputMode('url')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${inputMode === 'url' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}><LinkIcon className="h-4 w-4 inline mr-1" /> URL</button>
@@ -1829,6 +1941,16 @@ ${optimizedContent}
                      <p className="text-xs text-slate-500 mt-1">Found in HubSpot Account Settings</p>
                    </div>
                  </>
+               )}
+               {/* Website Style Integration Notice */}
+               {websiteCssStyles && (
+                 <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 text-blue-700 text-xs flex items-start gap-2">
+                   <Check className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                   <div>
+                     <p className="font-semibold">Website styling will be applied</p>
+                     <p className="text-blue-600 mt-0.5">Your content will match your website's exact CSS styles ({(websiteCssStyles.length / 1024).toFixed(1)}KB)</p>
+                   </div>
+                 </div>
                )}
                {error && <div className="p-3 bg-red-50 rounded-lg border border-red-200 text-red-700 text-xs"><AlertCircle className="h-3 w-3 inline mr-1" /> {error}</div>}
                <button onClick={handlePublish} disabled={isPublishing || (cmsType === 'hubspot' && (!hubspotApiKey || !hubspotPortalId))} className="w-full py-3 text-white rounded-lg font-semibold transition-all flex justify-center items-center gap-2 hover:shadow-md disabled:opacity-50" style={{ backgroundColor: algorizzAccentColor }}>
