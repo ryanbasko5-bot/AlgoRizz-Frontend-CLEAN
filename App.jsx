@@ -17,7 +17,7 @@ const defaultApiKey = import.meta.env.VITE_GOOGLE_API_KEY || "";
 const algorizzAccentColor = "#FF1493"; // Hot pink from logo
 const algorizzSecondaryColor = "#00E5FF"; // Cyan from logo
 const algorizzYellowColor = "#FFFF00"; // Yellow accent from logo
-const algorizzLogoPath = "/algorizz-logo.png";
+const algorizzLogoPath = "/logo.png";
 
 
 // Helper: Fetch with Timeout & Retry
@@ -316,13 +316,12 @@ export default function App() {
 
 
        const response = await fetchWithRetry(
-           `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getEffectiveKey()}`,
+           `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
            {
                method: 'POST',
                headers: { 'Content-Type': 'application/json' },
                body: JSON.stringify({
                    contents: [{ parts: [{ text: metaPrompt }] }],
-                   generationConfig: { responseMimeType: "application/json" }
                }),
            }
        );
@@ -688,13 +687,12 @@ export default function App() {
      `;
 
      const aiResponse = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
          body: JSON.stringify({
            contents: [{ parts: [{ text: stylePrompt }] }],
-           generationConfig: { responseMimeType: "application/json" }
          }),
        }
      );
@@ -827,13 +825,12 @@ export default function App() {
 
 
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
          body: JSON.stringify({
            contents: [{ parts: [{ text: prompt }] }],
-           generationConfig: { responseMimeType: "application/json" }
          }),
        }
      );
@@ -906,7 +903,7 @@ export default function App() {
 
      addDebug("Sending to Gemini...");
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -918,7 +915,6 @@ export default function App() {
                { inlineData: { mimeType: "image/jpeg", data: base64Data } }
              ]
            }],
-           generationConfig: { responseMimeType: "application/json" }
          }),
        }
      );
@@ -966,7 +962,7 @@ export default function App() {
 
      try {
        const response = await fetchWithRetry(
-         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getEffectiveKey()}`,
+         `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
          {
            method: 'POST',
            headers: { 'Content-Type': 'application/json' },
@@ -1130,7 +1126,7 @@ export default function App() {
 
    try {
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -1167,7 +1163,7 @@ export default function App() {
    try {
      // Use Gemini to generate via text-to-image description
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -1256,7 +1252,7 @@ export default function App() {
 
    try {
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -1451,7 +1447,13 @@ ${optimizedContent}
                  {customLogo ? (
                    <img src={customLogo} alt="Logo" className="h-10 w-auto" />
                  ) : (
-                   <img src={algorizzLogoPath} alt="AlgoRizz" className="h-16 w-auto" style={{ filter: 'drop-shadow(0 0 10px rgba(255, 20, 147, 0.5))' }} />
+                   <div className="flex items-center gap-2">
+                     <img src={algorizzLogoPath} alt="AlgoRizz" className="h-12 w-12" style={{ filter: 'drop-shadow(0 0 10px rgba(255, 20, 147, 0.5))' }} />
+                     <div className="flex flex-col">
+                       <h1 className="text-base font-bold" style={{ fontFamily: "'Press Start 2P', monospace", color: '#ffffff', textShadow: `0 0 10px rgba(255, 20, 147, 0.8)`, lineHeight: '1.1' }}>AlgoRizz</h1>
+                       <p className="text-xs" style={{ fontFamily: "'VT323', monospace", color: algorizzSecondaryColor, textShadow: `0 0 5px rgba(0, 229, 255, 0.5)`, letterSpacing: '0.03em', marginTop: '-2px' }}>SEDUCE THE ALGORITHM.</p>
+                     </div>
+                   </div>
                  )}
                </div>
                <button onClick={() => setShowSidebar(false)} className="p-2 rounded-lg transition-all" style={{ backgroundColor: 'rgba(255, 20, 147, 0.1)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 20, 147, 0.2)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 20, 147, 0.1)'}>
@@ -1515,11 +1517,11 @@ ${optimizedContent}
            {customLogo ? (
              <img src={customLogo} alt="Logo" className="h-8 w-auto" />
            ) : (
-             <div className="flex items-center gap-3">
-               <img src={algorizzLogoPath} alt="AlgoRizz" className="h-12 w-auto" style={{ filter: 'drop-shadow(0 0 8px rgba(255, 20, 147, 0.5))' }} />
-               <div className="hidden md:block">
-                 <h1 className="text-lg font-bold" style={{ fontFamily: "'Press Start 2P', monospace", color: '#ffffff', textShadow: `0 0 10px rgba(255, 20, 147, 0.8)`, lineHeight: '1.2' }}>AlgoRizz</h1>
-                 <p className="text-xs" style={{ fontFamily: "'VT323', monospace", color: algorizzSecondaryColor, textShadow: `0 0 5px rgba(0, 229, 255, 0.5)`, letterSpacing: '0.05em' }}>SEDUCE THE ALGORITHM.</p>
+             <div className="flex items-center gap-2">
+               <img src={algorizzLogoPath} alt="AlgoRizz" className="h-10 w-10" style={{ filter: 'drop-shadow(0 0 8px rgba(255, 20, 147, 0.5))' }} />
+               <div className="flex flex-col">
+                 <h1 className="text-sm font-bold" style={{ fontFamily: "'Press Start 2P', monospace", color: '#ffffff', textShadow: `0 0 10px rgba(255, 20, 147, 0.8)`, lineHeight: '1.1', letterSpacing: '0.02em' }}>AlgoRizz</h1>
+                 <p className="text-xs" style={{ fontFamily: "'VT323', monospace", color: algorizzSecondaryColor, textShadow: `0 0 5px rgba(0, 229, 255, 0.5)`, letterSpacing: '0.05em', marginTop: '-2px' }}>SEDUCE THE ALGORITHM.</p>
                </div>
              </div>
            )}
