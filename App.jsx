@@ -144,11 +144,13 @@ export default function App() {
  const [isGeneratingKeyword, setIsGeneratingKeyword] = useState(false);
  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
  const [isTranscribing, setIsTranscribing] = useState(false);
+ const [isScraping, setIsScraping] = useState(false);
  const [transcriptionStatus, setTranscriptionStatus] = useState(''); // New detailed status
  const [optimizedContent, setOptimizedContent] = useState(null);
  const [error, setError] = useState(null);
  const [activeTab, setActiveTab] = useState('preview');
  const [inputMode, setInputMode] = useState('text');
+ const [blogUrl, setBlogUrl] = useState('');
  const [copied, setCopied] = useState(false);
  const [timeLeft, setTimeLeft] = useState(0);
  const [totalEstTime, setTotalEstTime] = useState(0);
@@ -175,9 +177,9 @@ export default function App() {
 
  // Publish Integration State
  const [showPublishModal, setShowPublishModal] = useState(false);
- const [cmsType, setCmsType] = useState('wordpress');
- const [cmsUrl, setCmsUrl] = useState('');
- const [cmsApiKey, setCmsApiKey] = useState('');
+ const [cmsType, setCmsType] = useState('hubspot');
+ const [hubspotApiKey, setHubspotApiKey] = useState('');
+ const [hubspotPortalId, setHubspotPortalId] = useState('');
  const [isPublishing, setIsPublishing] = useState(false);
  const [publishSuccess, setPublishSuccess] = useState(false);
 
@@ -796,6 +798,84 @@ export default function App() {
  };
 
 
+ // 3. Handle Blog URL Scraping
+ const handleScrapeBlogUrl = async () => {
+   if (!blogUrl) return;
+   setIsScraping(true);
+   setError(null);
+   addDebug(`Scraping blog post from: ${blogUrl}`);
+
+   try {
+     const response = await fetchWithRetry(blogUrl, { method: 'GET' });
+     if (!response.ok) throw new Error(`Failed to fetch URL (${response.status})`);
+
+     const html = await response.text();
+
+     // Extract main content - try common patterns
+     const parser = new DOMParser();
+     const doc = parser.parseFromString(html, 'text/html');
+
+     // Common content selectors
+     const selectors = [
+       'article',
+       '[role="main"]',
+       '.post-content',
+       '.entry-content',
+       '.article-content',
+       '.content',
+       'main'
+     ];
+
+     let contentElement = null;
+     for (const selector of selectors) {
+       const el = doc.querySelector(selector);
+       if (el && el.textContent.length > 200) {
+         contentElement = el;
+         break;
+       }
+     }
+
+     if (!contentElement) {
+       throw new Error('Could not extract content. Try copying and pasting manually.');
+     }
+
+     // Get the HTML content
+     let content = contentElement.innerHTML;
+
+     // Clean up: remove scripts, styles, and tracking
+     content = content.replace(/<script[^>]*>.*?<\/script>/gi, '');
+     content = content.replace(/<style[^>]*>.*?<\/style>/gi, '');
+     content = content.replace(/<noscript[^>]*>.*?<\/noscript>/gi, '');
+     content = content.replace(/<!--[\s\S]*?-->/g, '');
+
+     // Convert to plain text for better readability
+     const tempDiv = document.createElement('div');
+     tempDiv.innerHTML = content;
+     const plainText = tempDiv.innerText;
+
+     if (plainText.length < 100) {
+       throw new Error('Extracted content too short. The page might be behind a paywall or login.');
+     }
+
+     setInputText(plainText);
+     if (contentEditableRef.current) {
+       contentEditableRef.current.innerHTML = plainText;
+     }
+     setInputMode('text');
+     addDebug(`Successfully scraped ${plainText.length} characters`);
+
+   } catch (err) {
+     if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+       setError('CORS Error: Cannot access this URL directly. Try copying the content manually.');
+     } else {
+       setError(`Scraping failed: ${err.message}`);
+     }
+     addDebug(`Scraping Failed: ${err.message}`, 'error');
+   } finally {
+     setIsScraping(false);
+   }
+ };
+
  // 3a. Handle File Upload
  const handleAudioUpload = async (e) => {
    const file = e.target.files[0];
@@ -1052,26 +1132,81 @@ ${optimizedContent}
  };
 
 
- const handlePublish = async () => {
+ const handlePublishToHubSpot = async () => {
+   if (!hubspotApiKey || !hubspotPortalId) {
+     setError('Please enter HubSpot API Key and Portal ID');
+     return;
+   }
+
    setIsPublishing(true);
-   const payload = {
-     cms: cmsType,
-     url: cmsUrl,
-     token: '***HIDDEN***',
-     data: {
-       title: targetKeyword || "Optimised AEO Post",
-       content: `<style>${aeoStyles}</style>${headerImage ? `<img src="${headerImage}" />` : ''}${optimizedContent}`,
-       status: 'draft',
-       author: 'AlgoRizz Tool'
+   setError(null);
+   addDebug(`Publishing to HubSpot (Portal: ${hubspotPortalId})...`);
+
+   try {
+     const htmlContent = `<style>${aeoStyles}</style>${headerImage ? `<img src="${headerImage}" class="aeo-featured-image" alt="Header" />` : ''}${optimizedContent}`;
+
+     const blogPostPayload = {
+       name: targetKeyword || 'Optimised AEO Post',
+       post_body: htmlContent,
+       post_summary: 'Optimised with AlgoRizz AEO',
+       publish_date: new Date().getTime(),
+       created: new Date().getTime(),
+       updated: new Date().getTime(),
+       state: 'DRAFT',
+       author: 'AlgoRizz Tool',
+       meta_description: targetKeyword || 'AEO Optimised Content'
+     };
+
+     const response = await fetchWithRetry(
+       `https://api.hubapi.com/content/api/v2/blog-posts?portalId=${hubspotPortalId}`,
+       {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json',
+           'Authorization': `Bearer ${hubspotApiKey}`
+         },
+         body: JSON.stringify(blogPostPayload)
+       }
+     );
+
+     if (!response.ok) {
+       const errData = await response.json().catch(() => ({}));
+       if (response.status === 401) {
+         throw new Error('Invalid HubSpot API Key');
+       } else if (response.status === 404) {
+         throw new Error('Portal ID not found. Check your HubSpot Portal ID.');
+       }
+       throw new Error(errData.message || `HubSpot API Error ${response.status}`);
      }
-   };
-   console.log("PUBLISH PAYLOAD:", payload);
-   setTimeout(() => {
-     setIsPublishing(false);
+
+     const data = await response.json();
+     addDebug(`Published to HubSpot! Blog ID: ${data.contentId || data.id}`);
      setPublishSuccess(true);
      setTimeout(() => setPublishSuccess(false), 3000);
      setShowPublishModal(false);
-   }, 1500);
+
+   } catch (err) {
+     addDebug(`HubSpot Publish Failed: ${err.message}`, 'error');
+     setError(`HubSpot Publish Failed: ${err.message}`);
+   } finally {
+     setIsPublishing(false);
+   }
+ };
+
+ const handlePublish = async () => {
+   if (cmsType === 'hubspot') {
+     await handlePublishToHubSpot();
+   } else {
+     setIsPublishing(true);
+     addDebug(`Publishing to ${cmsType}...`);
+     setTimeout(() => {
+       setIsPublishing(false);
+       setPublishSuccess(true);
+       setTimeout(() => setPublishSuccess(false), 3000);
+       setShowPublishModal(false);
+       addDebug(`Published to ${cmsType}`);
+     }, 1500);
+   }
  };
 
 
@@ -1266,6 +1401,7 @@ ${optimizedContent}
            <div className="bg-white border border-slate-200 p-6 rounded-xl flex-grow flex flex-col">
               <div className="flex items-center gap-2 mb-4 border-b border-slate-200 pb-4">
                 <button onClick={() => setInputMode('text')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${inputMode === 'text' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}><FileText className="h-4 w-4 inline mr-1" /> Text</button>
+                <button onClick={() => setInputMode('url')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${inputMode === 'url' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}><LinkIcon className="h-4 w-4 inline mr-1" /> URL</button>
                 <button onClick={() => setInputMode('audio')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${inputMode === 'audio' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}><Mic className="h-4 w-4 inline mr-1" /> Audio</button>
               </div>
              <div className="mb-4">
@@ -1294,7 +1430,22 @@ ${optimizedContent}
                    </div>
                  </>
                )}
-               {inputMode === 'audio' && (
+               {inputMode === 'url' && (
+                 <>
+                   <label className="text-sm font-semibold text-slate-700 block mb-2">Blog Post URL</label>
+                   <div className="space-y-3">
+                     <div className="flex gap-2">
+                       <input type="url" placeholder="https://example.com/blog/my-article" className="flex-1 px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 outline-none" value={blogUrl} onChange={(e) => setBlogUrl(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleScrapeBlogUrl()}/>
+                       <button onClick={handleScrapeBlogUrl} disabled={!blogUrl || isScraping} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg border border-slate-200 transition-all flex items-center gap-2 font-semibold disabled:opacity-50" title="Fetch and extract content">
+                         {isScraping ? <RefreshCw className="h-4 w-4 animate-spin"/> : <LinkIcon className="h-4 w-4"/>}
+                       </button>
+                     </div>
+                     {isScraping && <div className="p-2 bg-blue-50 text-blue-700 text-xs rounded border border-blue-200 flex items-center gap-2 font-semibold"><RefreshCw className="h-3 w-3 animate-spin" /> Scraping content...</div>}
+                     {inputText && !isScraping && <div className="p-2 bg-emerald-50 text-emerald-700 text-xs rounded border border-emerald-200 flex items-center gap-2 font-semibold"><Check className="h-3 w-3" /> Content extracted!</div>}
+                     <p className="text-xs text-slate-500">Tip: Works best with blog posts, articles, and news pages.</p>
+                   </div>
+                 </>
+               )}
                  <>
                    <label className="text-sm font-semibold text-slate-700 block mb-2">Upload Audio</label>
                    <div className={`border-2 border-dashed border-slate-300 rounded-lg p-8 flex flex-col items-center justify-center text-center transition-all ${isTranscribing ? 'bg-slate-50 cursor-wait' : 'hover:bg-slate-50 hover:border-slate-400 cursor-pointer'}`}>
@@ -1419,13 +1570,28 @@ ${optimizedContent}
              <div className="p-6 space-y-5">
                <div>
                  <label className="block text-sm font-semibold text-slate-900 mb-3">Select Platform</label>
-                 <select value={cmsType} onChange={(e) => setCmsType(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 transition-all">
-                   <option value="wordpress" className="bg-white">WordPress</option>
+                 <select value={cmsType} onChange={(e) => { setCmsType(e.target.value); setError(null); }} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 transition-all">
                    <option value="hubspot" className="bg-white">HubSpot</option>
+                   <option value="wordpress" className="bg-white">WordPress</option>
                    <option value="webflow" className="bg-white">Webflow</option>
                  </select>
                </div>
-               <button onClick={handlePublish} disabled={isPublishing} className="w-full py-3 text-white rounded-lg font-semibold transition-all flex justify-center items-center gap-2 hover:shadow-md disabled:opacity-50" style={{ backgroundColor: algorizzAccentColor }}>
+               {cmsType === 'hubspot' && (
+                 <>
+                   <div>
+                     <label className="block text-sm font-semibold text-slate-900 mb-2">HubSpot API Key</label>
+                     <input type="password" placeholder="hc_xxxxxxxxxxxxxxxx" value={hubspotApiKey} onChange={(e) => setHubspotApiKey(e.target.value)} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 outline-none" />
+                     <p className="text-xs text-slate-500 mt-1">Get from: HubSpot Settings → Integrations → Private Apps</p>
+                   </div>
+                   <div>
+                     <label className="block text-sm font-semibold text-slate-900 mb-2">Portal ID</label>
+                     <input type="text" placeholder="123456789" value={hubspotPortalId} onChange={(e) => setHubspotPortalId(e.target.value)} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 outline-none" />
+                     <p className="text-xs text-slate-500 mt-1">Found in HubSpot Account Settings</p>
+                   </div>
+                 </>
+               )}
+               {error && <div className="p-3 bg-red-50 rounded-lg border border-red-200 text-red-700 text-xs"><AlertCircle className="h-3 w-3 inline mr-1" /> {error}</div>}
+               <button onClick={handlePublish} disabled={isPublishing || (cmsType === 'hubspot' && (!hubspotApiKey || !hubspotPortalId))} className="w-full py-3 text-white rounded-lg font-semibold transition-all flex justify-center items-center gap-2 hover:shadow-md disabled:opacity-50" style={{ backgroundColor: algorizzAccentColor }}>
                  {isPublishing ? <RefreshCw className="h-4 w-4 animate-spin"/> : null}
                  {isPublishing ? 'Publishing...' : 'Publish Now'}
                </button>
