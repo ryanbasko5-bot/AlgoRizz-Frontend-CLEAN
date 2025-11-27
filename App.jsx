@@ -17,7 +17,7 @@ const defaultApiKey = import.meta.env.VITE_GOOGLE_API_KEY || "";
 const algorizzAccentColor = "#FF1493"; // Hot pink from logo
 const algorizzSecondaryColor = "#00E5FF"; // Cyan from logo
 const algorizzYellowColor = "#FFFF00"; // Yellow accent from logo
-const algorizzLogoPath = "/files/696b9b03-71ec-432f-9c09-7f06b5d91942.jpeg";
+const algorizzLogoPath = "/algorizz-logo.png";
 
 
 // Helper: Fetch with Timeout & Retry
@@ -1444,14 +1444,14 @@ ${optimizedContent}
          <div className="absolute inset-0 bg-black/30" onClick={() => setShowSidebar(false)}></div>
          
          {/* Sidebar */}
-         <div className="relative w-80 flex flex-col" style={{ backgroundColor: '#0d0520', boxShadow: `0 0 30px rgba(255, 20, 147, 0.3), 0 0 60px rgba(0, 229, 255, 0.2)` }}>
-           <div className="p-6" style={{ borderBottom: `2px solid rgba(255, 20, 147, 0.3)` }}>
+         <div className="relative w-80 flex flex-col" style={{ backgroundColor: '#1a0b2e', boxShadow: `0 0 30px rgba(255, 20, 147, 0.3), 0 0 60px rgba(0, 229, 255, 0.2)` }}>
+           <div className="p-6" style={{ backgroundColor: '#2d1b4e', borderBottom: `2px solid rgba(255, 20, 147, 0.3)` }}>
              <div className="flex items-center justify-between mb-4">
                <div className="flex items-center gap-3">
                  {customLogo ? (
                    <img src={customLogo} alt="Logo" className="h-10 w-auto" />
                  ) : (
-                   <h1 className="text-2xl font-bold" style={{ fontFamily: "'Press Start 2P', monospace", color: algorizzAccentColor, textShadow: `0 0 20px ${algorizzAccentColor}, 0 0 40px ${algorizzAccentColor}` }}>AlgoRizz</h1>
+                   <img src={algorizzLogoPath} alt="AlgoRizz" className="h-16 w-auto" style={{ filter: 'drop-shadow(0 0 10px rgba(255, 20, 147, 0.5))' }} />
                  )}
                </div>
                <button onClick={() => setShowSidebar(false)} className="p-2 rounded-lg transition-all" style={{ backgroundColor: 'rgba(255, 20, 147, 0.1)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 20, 147, 0.2)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 20, 147, 0.1)'}>
@@ -1504,9 +1504,9 @@ ${optimizedContent}
      )}
 
      {/* TOP BAR - Minimal */}
-     <div className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
+     <div className="sticky top-0 z-40 shadow-sm" style={{ background: 'linear-gradient(135deg, #2d1b4e 0%, #1a0b2e 100%)', borderBottom: '2px solid rgba(255, 20, 147, 0.3)', boxShadow: '0 4px 20px rgba(255, 20, 147, 0.2)' }}>
        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
-         <button onClick={() => setShowSidebar(true)} className="flex items-center gap-3 hover:bg-slate-50 px-3 py-2 rounded-lg transition-all">
+         <button onClick={() => setShowSidebar(true)} className="flex items-center gap-3 px-3 py-2 rounded-lg transition-all" style={{ backgroundColor: 'rgba(255, 20, 147, 0.1)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 20, 147, 0.2)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 20, 147, 0.1)'}>
            <div className="flex flex-col gap-1">
              <div className="w-5 h-0.5 rounded" style={{ backgroundColor: algorizzAccentColor, boxShadow: `0 0 5px ${algorizzAccentColor}` }}></div>
              <div className="w-5 h-0.5 rounded" style={{ backgroundColor: algorizzSecondaryColor, boxShadow: `0 0 5px ${algorizzSecondaryColor}` }}></div>
@@ -1515,7 +1515,13 @@ ${optimizedContent}
            {customLogo ? (
              <img src={customLogo} alt="Logo" className="h-8 w-auto" />
            ) : (
-             <h1 className="text-xl font-bold" style={{ fontFamily: "'Press Start 2P', monospace", color: algorizzAccentColor, textShadow: `0 0 15px ${algorizzAccentColor}` }}>AlgoRizz</h1>
+             <div className="flex items-center gap-3">
+               <img src={algorizzLogoPath} alt="AlgoRizz" className="h-12 w-auto" style={{ filter: 'drop-shadow(0 0 8px rgba(255, 20, 147, 0.5))' }} />
+               <div className="hidden md:block">
+                 <h1 className="text-lg font-bold" style={{ fontFamily: "'Press Start 2P', monospace", color: '#ffffff', textShadow: `0 0 10px rgba(255, 20, 147, 0.8)`, lineHeight: '1.2' }}>AlgoRizz</h1>
+                 <p className="text-xs" style={{ fontFamily: "'VT323', monospace", color: algorizzSecondaryColor, textShadow: `0 0 5px rgba(0, 229, 255, 0.5)`, letterSpacing: '0.05em' }}>SEDUCE THE ALGORITHM.</p>
+               </div>
+             </div>
            )}
          </button>
          
