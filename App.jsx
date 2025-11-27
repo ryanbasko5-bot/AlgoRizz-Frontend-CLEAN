@@ -174,9 +174,12 @@ export default function App() {
  const [logoUrl, setLogoUrl] = useState(''); // Defaulted to empty string for generated content
  const [brandTone, setBrandTone] = useState(localStorage.getItem('algorizz_brandTone') || 'Professional and Direct');
  const [savedBrandVoice, setSavedBrandVoice] = useState(localStorage.getItem('algorizz_brandVoice') || '');
+ const [websiteStyleGuide, setWebsiteStyleGuide] = useState('');
+ const [isScanningStyle, setIsScanningStyle] = useState(false);
  const [headerImage, setHeaderImage] = useState(null);
  const [showExtras, setShowExtras] = useState(false);
  const fileInputRef = useRef(null);
+ const logoUploadRef = useRef(null);
  const contentEditableRef = useRef(null);
 
 
@@ -614,6 +617,77 @@ export default function App() {
  `;
 
 
+ // Scan Website for Style Matching
+ const handleScanWebsiteStyle = async () => {
+   if (!websiteUrl) return;
+   setIsScanningStyle(true);
+   setError(null);
+   addDebug(`Scanning website style: ${websiteUrl}`);
+
+   try {
+     const response = await fetchWithRetry(websiteUrl, { method: 'GET' });
+     if (!response.ok) throw new Error(`Failed to fetch URL (${response.status})`);
+
+     const html = await response.text();
+     const parser = new DOMParser();
+     const doc = parser.parseFromString(html, 'text/html');
+
+     // Extract sample content from blog posts/articles
+     const contentSamples = [];
+     const articleElements = doc.querySelectorAll('article, .post, .blog-post, [class*="content"]');
+     articleElements.forEach((el, idx) => {
+       if (idx < 3 && el.textContent.length > 200) {
+         contentSamples.push(el.textContent.substring(0, 500));
+       }
+     });
+
+     const sampleText = contentSamples.join('\n\n');
+
+     // Analyze writing style with AI
+     const stylePrompt = `
+       Analyze the writing style of this website content and provide a detailed style guide.
+       Return valid JSON with:
+       {
+         "tone": "describe the tone (e.g., conversational, formal, technical)",
+         "sentenceStructure": "describe sentence length and complexity",
+         "vocabulary": "describe vocabulary level and technical terms usage",
+         "formatting": "describe paragraph structure, use of headings, lists",
+         "voicePattern": "describe narrative voice (first person, third person, etc.)"
+       }
+
+       Content samples:
+       ${sampleText}
+     `;
+
+     const aiResponse = await fetchWithRetry(
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getEffectiveKey()}`,
+       {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({
+           contents: [{ parts: [{ text: stylePrompt }] }],
+           generationConfig: { responseMimeType: "application/json" }
+         }),
+       }
+     );
+
+     if (!aiResponse.ok) throw new Error(`Style Analysis Error ${aiResponse.status}`);
+
+     const data = await aiResponse.json();
+     const styleData = safeJsonParse(data.candidates?.[0]?.content?.parts?.[0]?.text);
+     
+     const styleGuide = `Tone: ${styleData.tone}. Sentence Structure: ${styleData.sentenceStructure}. Vocabulary: ${styleData.vocabulary}. Formatting: ${styleData.formatting}. Voice: ${styleData.voicePattern}.`;
+     setWebsiteStyleGuide(styleGuide);
+     addDebug("Website style captured successfully");
+
+   } catch (err) {
+     addDebug(`Style Scan Failed: ${err.message}`, 'error');
+     setError(`Could not scan website style: ${err.message}`);
+   } finally {
+     setIsScanningStyle(false);
+   }
+ };
+
  // Handle Custom Logo Upload
  const handleLogoUpload = (e) => {
    const file = e.target.files[0];
@@ -709,6 +783,9 @@ export default function App() {
      if (brandData.fontFamily) setBrandFont(brandData.fontFamily);
      if (brandData.tone) setBrandTone(brandData.tone);
      addDebug("URL Analysis Success");
+     
+     // Auto-scan writing style
+     await handleScanWebsiteStyle();
 
 
    } catch (e) {
@@ -1092,6 +1169,7 @@ export default function App() {
 
      Use the Brand Tone: ${brandTone}.
      ${savedBrandVoice ? `Brand Voice Guidelines: ${savedBrandVoice}` : ''}
+     ${websiteStyleGuide ? `Website Style Guide to Match: ${websiteStyleGuide}` : ''}
    `;
 
 
@@ -1329,15 +1407,7 @@ ${optimizedContent}
            </nav>
            
            <div className="p-4 border-t border-slate-200">
-             <label className="block text-xs font-semibold text-slate-600 mb-2">Custom Logo</label>
-             <label className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer transition-all">
-               <Upload className="h-4 w-4 text-slate-600" />
-               <span className="text-sm font-medium text-slate-700">Upload Logo</span>
-               <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-             </label>
-             {customLogo && (
-               <button onClick={() => { setCustomLogo(''); localStorage.removeItem('algorizz_customLogo'); }} className="w-full mt-2 text-xs text-red-600 hover:text-red-700 font-medium">Remove Logo</button>
-             )}
+             <p className="text-xs text-slate-500 text-center">Configure brand assets in Settings</p>
            </div>
          </div>
        </div>
@@ -1688,6 +1758,31 @@ ${optimizedContent}
                   <p className="text-xs text-slate-600 mb-3">Describe your brand's writing style, tone, and personality</p>
                   <textarea placeholder="e.g., We write in a conversational yet authoritative tone, using British English spelling. We avoid jargon and prefer short sentences..." value={savedBrandVoice} onChange={(e) => setSavedBrandVoice(e.target.value)} rows={4} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 transition-all resize-none"/>
                   <p className="text-xs text-slate-500 mt-1">This will be applied to all content optimizations</p>
+               </div>
+               <div>
+                  <label className="block text-sm font-semibold text-slate-900 mb-3">Brand Kit</label>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-2">Company Logo</label>
+                      <label className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-50 hover:bg-slate-100 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer transition-all">
+                        <Upload className="h-4 w-4 text-slate-600" />
+                        <span className="text-sm font-medium text-slate-700">{customLogo ? 'Change Logo' : 'Upload Logo'}</span>
+                        <input ref={logoUploadRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                      </label>
+                      {customLogo && (
+                        <div className="mt-2 flex items-center justify-between p-2 bg-slate-50 rounded border border-slate-200">
+                          <img src={customLogo} alt="Logo Preview" className="h-8 w-auto" />
+                          <button onClick={() => { setCustomLogo(''); localStorage.removeItem('algorizz_customLogo'); if(logoUploadRef.current) logoUploadRef.current.value = ''; }} className="text-xs text-red-600 hover:text-red-700 font-medium">Remove</button>
+                        </div>
+                      )}
+                    </div>
+                    {websiteStyleGuide && (
+                      <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                        <p className="text-xs font-semibold text-emerald-700 mb-1">Website Style Captured</p>
+                        <p className="text-xs text-emerald-600">{websiteStyleGuide.substring(0, 150)}...</p>
+                      </div>
+                    )}
+                  </div>
                </div>
                <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 h-40 overflow-y-auto">
                   <div className="flex items-center gap-2 mb-3 text-xs font-semibold text-slate-700 pb-2 border-b border-slate-200">
