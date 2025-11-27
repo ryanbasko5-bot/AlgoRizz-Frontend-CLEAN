@@ -18,6 +18,7 @@ const algorizzAccentColor = "#FF1493"; // Hot pink from logo
 const algorizzSecondaryColor = "#00E5FF"; // Cyan from logo
 const algorizzYellowColor = "#FFFF00"; // Yellow accent from logo
 const algorizzLogoPath = "/logo.png";
+const corsProxy = "https://api.allorigins.win/raw?url="; // CORS proxy
 
 
 // Helper: Fetch with Timeout & Retry
@@ -316,7 +317,7 @@ export default function App() {
 
 
        const response = await fetchWithRetry(
-           `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
+           `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getEffectiveKey()}`,
            {
                method: 'POST',
                headers: { 'Content-Type': 'application/json' },
@@ -628,7 +629,10 @@ export default function App() {
    addDebug(`Scanning website structure & styles: ${websiteUrl}`);
 
    try {
-     const response = await fetchWithRetry(websiteUrl, { method: 'GET' });
+     // Use CORS proxy to bypass restrictions
+     const targetUrl = websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`;
+     const proxiedUrl = corsProxy + encodeURIComponent(targetUrl);
+     const response = await fetchWithRetry(proxiedUrl, { method: 'GET' });
      if (!response.ok) throw new Error(`Failed to fetch URL (${response.status})`);
 
      const html = await response.text();
@@ -687,7 +691,7 @@ export default function App() {
      `;
 
      const aiResponse = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -825,7 +829,7 @@ export default function App() {
 
 
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -903,7 +907,7 @@ export default function App() {
 
      addDebug("Sending to Gemini...");
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -962,7 +966,7 @@ export default function App() {
 
      try {
        const response = await fetchWithRetry(
-         `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
+         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getEffectiveKey()}`,
          {
            method: 'POST',
            headers: { 'Content-Type': 'application/json' },
@@ -1015,65 +1019,87 @@ export default function App() {
    addDebug(`Scraping blog post from: ${blogUrl}`);
 
    try {
-     const response = await fetchWithRetry(blogUrl, { method: 'GET' });
+     // Use CORS proxy to bypass restrictions
+     const proxiedUrl = corsProxy + encodeURIComponent(blogUrl);
+     const response = await fetchWithRetry(proxiedUrl, { method: 'GET' });
      if (!response.ok) throw new Error(`Failed to fetch URL (${response.status})`);
 
      const html = await response.text();
 
-     // Extract main content - try common patterns
+     // Extract main content - try multiple strategies
      const parser = new DOMParser();
      const doc = parser.parseFromString(html, 'text/html');
 
-     // Common content selectors
+     // Remove all scripts, styles, and non-content elements first
+     doc.querySelectorAll('script, style, noscript, iframe, nav, header, footer, aside, .ad, .advertisement, .sidebar').forEach(el => el.remove());
+
+     // Try finding content with multiple strategies
+     let contentElement = null;
+     
+     // Strategy 1: Look for common content containers
      const selectors = [
        'article',
        '[role="main"]',
+       'main',
        '.post-content',
        '.entry-content',
        '.article-content',
-       '.content',
-       'main'
+       '.article-body',
+       '.post-body',
+       '.content-body',
+       '.blog-content',
+       '[class*="content"]',
+       '[class*="article"]',
+       '[class*="post"]'
      ];
 
-     let contentElement = null;
      for (const selector of selectors) {
        const el = doc.querySelector(selector);
-       if (el && el.textContent.length > 200) {
+       if (el && el.textContent.trim().length > 200) {
          contentElement = el;
          break;
        }
      }
 
+     // Strategy 2: If no content found, find the element with most text
      if (!contentElement) {
+       const allElements = doc.querySelectorAll('div, section, article');
+       let maxLength = 0;
+       for (const el of allElements) {
+         const textLength = el.textContent.trim().length;
+         if (textLength > maxLength && textLength > 200) {
+           maxLength = textLength;
+           contentElement = el;
+         }
+       }
+     }
+
+     // Strategy 3: Fall back to body if nothing else works
+     if (!contentElement) {
+       contentElement = doc.body;
+     }
+
+     if (!contentElement || contentElement.textContent.trim().length < 100) {
        throw new Error('Could not extract content. Try copying and pasting manually.');
      }
 
-     // Get the HTML content
+     // Get cleaned HTML
      let content = contentElement.innerHTML;
 
-     // Clean up: remove scripts, styles, and tracking
-     content = content.replace(/<script[^>]*>.*?<\/script>/gi, '');
-     content = content.replace(/<style[^>]*>.*?<\/style>/gi, '');
-     content = content.replace(/<noscript[^>]*>.*?<\/noscript>/gi, '');
+     // Additional cleanup
      content = content.replace(/<!--[\s\S]*?-->/g, '');
+     content = content.trim();
 
-     // Keep HTML with links preserved
-     const tempDiv = document.createElement('div');
-     tempDiv.innerHTML = content;
-     
-     // Convert to text but keep anchor tags
-     const cleanedHtml = tempDiv.innerHTML;
-
-     if (cleanedHtml.length < 100) {
+     if (content.length < 100) {
        throw new Error('Extracted content too short. The page might be behind a paywall or login.');
      }
 
-     setInputText(cleanedHtml);
+     setInputText(content);
      if (contentEditableRef.current) {
-       contentEditableRef.current.innerHTML = cleanedHtml;
+       contentEditableRef.current.innerHTML = content;
      }
      setInputMode('text');
-     addDebug(`Successfully scraped ${plainText.length} characters`);
+     addDebug(`Successfully scraped ${content.length} characters`);
 
    } catch (err) {
      if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
@@ -1126,7 +1152,7 @@ export default function App() {
 
    try {
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -1163,7 +1189,7 @@ export default function App() {
    try {
      // Use Gemini to generate via text-to-image description
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -1252,7 +1278,7 @@ export default function App() {
 
    try {
      const response = await fetchWithRetry(
-       `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${getEffectiveKey()}`,
+       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getEffectiveKey()}`,
        {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -1432,7 +1458,7 @@ ${optimizedContent}
 
 
  return (
-   <div className="min-h-screen text-white font-sans" style={{ backgroundColor: appBackgroundColor }}>
+   <div className="min-h-screen text-white font-sans bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
      {/* SIDEBAR MENU */}
      {showSidebar && (
        <div className="fixed inset-0 z-50 flex">
@@ -1440,8 +1466,8 @@ ${optimizedContent}
          <div className="absolute inset-0 bg-black/30" onClick={() => setShowSidebar(false)}></div>
          
          {/* Sidebar */}
-         <div className="relative w-80 flex flex-col" style={{ backgroundColor: '#1a0b2e', boxShadow: `0 0 30px rgba(255, 20, 147, 0.3), 0 0 60px rgba(0, 229, 255, 0.2)` }}>
-           <div className="p-6" style={{ backgroundColor: '#2d1b4e', borderBottom: `2px solid rgba(255, 20, 147, 0.3)` }}>
+         <div className="relative w-80 flex flex-col bg-gradient-to-br from-slate-800 via-purple-900 to-slate-800 backdrop-blur-xl" style={{ boxShadow: `0 0 30px rgba(255, 20, 147, 0.3), 0 0 60px rgba(0, 229, 255, 0.2)` }}>
+           <div className="p-6 bg-gradient-to-br from-purple-800/50 to-slate-800/50 backdrop-blur-sm" style={{ borderBottom: `2px solid rgba(255, 20, 147, 0.3)` }}>
              <div className="flex items-center justify-between mb-4">
                <div className="flex items-center gap-3">
                  {customLogo ? (

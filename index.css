@@ -17,54 +17,61 @@ body {
   background: var(--dark-bg);
 }
 
-/* Neon Card Styles */
+/* Modern Glassmorphic Card Styles (matching GEO platform) */
 .neon-card {
-  background: rgba(13, 5, 32, 0.8);
-  border: 2px solid rgba(255, 20, 147, 0.3);
-  box-shadow: 0 0 20px rgba(255, 20, 147, 0.2), inset 0 0 20px rgba(255, 20, 147, 0.05);
-  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1));
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(139, 92, 246, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .neon-card:hover {
-  border-color: rgba(255, 20, 147, 0.5);
-  box-shadow: 0 0 30px rgba(255, 20, 147, 0.3), inset 0 0 30px rgba(255, 20, 147, 0.1);
-}
-
-/* Neon Input Styles */
-.neon-input {
-  background: rgba(13, 5, 32, 0.6) !important;
-  border: 2px solid rgba(0, 229, 255, 0.3) !important;
-  color: var(--neon-cyan) !important;
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.1);
-}
-
-.neon-input:focus {
-  border-color: rgba(0, 229, 255, 0.6) !important;
-  box-shadow: 0 0 20px rgba(0, 229, 255, 0.3) !important;
-  outline: none !important;
-}
-
-.neon-input::placeholder {
-  color: rgba(160, 174, 192, 0.6) !important;
-}
-
-/* Neon Button */
-.neon-button {
-  background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
-  border: 2px solid var(--neon-pink);
-  box-shadow: 0 0 20px rgba(255, 20, 147, 0.5), inset 0 0 10px rgba(255, 20, 147, 0.2);
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 12px 40px 0 rgba(139, 92, 246, 0.3);
+  transform: translateY(-2px);
   transition: all 0.3s ease;
 }
 
+/* Modern Input Styles (matching GEO platform) */
+.neon-input {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 2px solid rgba(139, 92, 246, 0.3) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.neon-input:focus {
+  border-color: rgba(139, 92, 246, 0.6) !important;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3) !important;
+  outline: none !important;
+  ring: 2px;
+  ring-color: rgba(139, 92, 246, 0.2);
+}
+
+.neon-input::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Modern Gradient Button (matching GEO platform) */
+.neon-button {
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  border: none;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+  text-shadow: none;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
 .neon-button:hover {
-  box-shadow: 0 0 30px rgba(255, 20, 147, 0.8), inset 0 0 20px rgba(255, 20, 147, 0.3);
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.6);
   transform: translateY(-2px);
 }
 
-/* Neon Label */
+/* Modern Label (matching GEO platform) */
 .neon-label {
-  color: var(--neon-pink);
-  text-shadow: 0 0 10px rgba(255, 20, 147, 0.5);
+  color: #a78bfa;
+  text-shadow: none;
   font-weight: bold;
 }
