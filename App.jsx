@@ -135,6 +135,9 @@ export default function App() {
  const [showSettings, setShowSettings] = useState(false);
  const [keyStatus, setKeyStatus] = useState('checking');
  const [debugLog, setDebugLog] = useState([]);
+ const [showSidebar, setShowSidebar] = useState(false);
+ const [customLogo, setCustomLogo] = useState(localStorage.getItem('algorizz_customLogo') || '');
+ const [appBackgroundColor, setAppBackgroundColor] = useState('#f8fafc');
 
 
  // Content State
@@ -610,6 +613,47 @@ export default function App() {
    }
  `;
 
+
+ // Handle Custom Logo Upload
+ const handleLogoUpload = (e) => {
+   const file = e.target.files[0];
+   if (!file) return;
+   const reader = new FileReader();
+   reader.onload = (event) => {
+     const logoDataUrl = event.target.result;
+     setCustomLogo(logoDataUrl);
+     localStorage.setItem('algorizz_customLogo', logoDataUrl);
+     
+     // Extract dominant background color from logo
+     const img = new Image();
+     img.onload = () => {
+       const canvas = document.createElement('canvas');
+       canvas.width = img.width;
+       canvas.height = img.height;
+       const ctx = canvas.getContext('2d');
+       ctx.drawImage(img, 0, 0);
+       
+       // Sample corner pixels to detect background
+       const corners = [
+         ctx.getImageData(0, 0, 1, 1).data,
+         ctx.getImageData(img.width - 1, 0, 1, 1).data,
+         ctx.getImageData(0, img.height - 1, 1, 1).data,
+         ctx.getImageData(img.width - 1, img.height - 1, 1, 1).data
+       ];
+       
+       // Average the corner colors
+       const avgR = Math.round(corners.reduce((sum, c) => sum + c[0], 0) / 4);
+       const avgG = Math.round(corners.reduce((sum, c) => sum + c[1], 0) / 4);
+       const avgB = Math.round(corners.reduce((sum, c) => sum + c[2], 0) / 4);
+       
+       const detectedBg = `rgb(${avgR}, ${avgG}, ${avgB})`;
+       setAppBackgroundColor(detectedBg);
+       addDebug(`Logo background detected: ${detectedBg}`);
+     };
+     img.src = logoDataUrl;
+   };
+   reader.readAsDataURL(file);
+ };
 
  // 1. Analyze Brand URL
  const handleAnalyzeBrandUrl = async () => {
@@ -1234,40 +1278,90 @@ ${optimizedContent}
 
 
  return (
-   <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
-     {/* TOP NAVIGATION - Sticky Header */}
-     <div className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
-       <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
-         <div className="flex items-center gap-3">
-           <h1 className="text-2xl font-bold" style={{ color: algorizzAccentColor }}>AlgoRizz</h1>
-         </div>
+   <div className="min-h-screen text-slate-900 font-sans" style={{ backgroundColor: appBackgroundColor }}>
+     {/* SIDEBAR MENU */}
+     {showSidebar && (
+       <div className="fixed inset-0 z-50 flex">
+         {/* Overlay */}
+         <div className="absolute inset-0 bg-black/30" onClick={() => setShowSidebar(false)}></div>
          
-         <div className="flex items-center gap-4">
-           <button
-             onClick={() => setView('editor')}
-             className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${ view === 'editor' ? 'bg-slate-100 text-slate-900 border border-slate-300' : 'text-slate-600 hover:bg-slate-50 border border-transparent' }`}
-           >
-             <Wand2 className="h-4 w-4 inline mr-2" />Editor
-           </button>
-           <button
-             onClick={() => setView('library')}
-             className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${ view === 'library' ? 'bg-slate-100 text-slate-900 border border-slate-300' : 'text-slate-600 hover:bg-slate-50 border border-transparent' }`}
-           >
-             <Library className="h-4 w-4 inline mr-2" />Library
-           </button>
+         {/* Sidebar */}
+         <div className="relative w-80 bg-white shadow-xl flex flex-col">
+           <div className="p-6 border-b border-slate-200">
+             <div className="flex items-center justify-between mb-6">
+               <div className="flex items-center gap-3">
+                 {customLogo ? (
+                   <img src={customLogo} alt="Logo" className="h-10 w-auto" />
+                 ) : (
+                   <h1 className="text-2xl font-bold" style={{ color: algorizzAccentColor }}>AlgoRizz</h1>
+                 )}
+               </div>
+               <button onClick={() => setShowSidebar(false)} className="p-2 hover:bg-slate-100 rounded-lg transition-all">
+                 <X className="h-5 w-5 text-slate-600" />
+               </button>
+             </div>
+             {keyStatus === 'valid' && <span className="text-xs font-bold text-emerald-600 flex items-center gap-1"><ShieldCheck className="h-4 w-4" /> API Active</span>}
+             {keyStatus === 'invalid' && <span className="text-xs font-bold text-red-600 flex items-center gap-1 animate-pulse"><ShieldAlert className="h-4 w-4" /> API Error</span>}
+           </div>
+           
+           <nav className="flex-grow p-4 space-y-2">
+             <button
+               onClick={() => { setView('editor'); setShowSidebar(false); }}
+               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-sm transition-all ${view === 'editor' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}
+             >
+               <Wand2 className="h-5 w-5" />
+               <span>Editor</span>
+             </button>
+             <button
+               onClick={() => { setView('library'); setShowSidebar(false); }}
+               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-sm transition-all ${view === 'library' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}
+             >
+               <Library className="h-5 w-5" />
+               <span>Library</span>
+             </button>
+             <button
+               onClick={() => { setShowSettings(true); setShowSidebar(false); }}
+               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-sm text-slate-600 hover:bg-slate-50 transition-all"
+             >
+               <Settings className="h-5 w-5" />
+               <span>Settings</span>
+             </button>
+           </nav>
+           
+           <div className="p-4 border-t border-slate-200">
+             <label className="block text-xs font-semibold text-slate-600 mb-2">Custom Logo</label>
+             <label className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer transition-all">
+               <Upload className="h-4 w-4 text-slate-600" />
+               <span className="text-sm font-medium text-slate-700">Upload Logo</span>
+               <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+             </label>
+             {customLogo && (
+               <button onClick={() => { setCustomLogo(''); localStorage.removeItem('algorizz_customLogo'); }} className="w-full mt-2 text-xs text-red-600 hover:text-red-700 font-medium">Remove Logo</button>
+             )}
+           </div>
+         </div>
+       </div>
+     )}
 
-           <div className="h-6 w-px bg-slate-200"></div>
-
-           {keyStatus === 'valid' && <span className="text-xs font-bold text-emerald-600 flex items-center gap-1 px-3"><ShieldCheck className="h-4 w-4" /> Active</span>}
-           {keyStatus === 'invalid' && <span className="text-xs font-bold text-red-600 flex items-center gap-1 px-3 animate-pulse"><ShieldAlert className="h-4 w-4" /> Error</span>}
-          
-           <button
-             onClick={() => setShowSettings(true)}
-             className="p-2 hover:bg-slate-100 text-slate-600 rounded-lg transition-all border border-transparent hover:border-slate-200"
-             title="Settings / API Key"
-           >
-             <Settings className="h-5 w-5" />
-           </button>
+     {/* TOP BAR - Minimal */}
+     <div className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
+       <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
+         <button onClick={() => setShowSidebar(true)} className="flex items-center gap-3 hover:bg-slate-50 px-3 py-2 rounded-lg transition-all">
+           <div className="flex flex-col gap-1">
+             <div className="w-5 h-0.5 bg-slate-700 rounded"></div>
+             <div className="w-5 h-0.5 bg-slate-700 rounded"></div>
+             <div className="w-5 h-0.5 bg-slate-700 rounded"></div>
+           </div>
+           {customLogo ? (
+             <img src={customLogo} alt="Logo" className="h-8 w-auto" />
+           ) : (
+             <h1 className="text-xl font-bold" style={{ color: algorizzAccentColor }}>AlgoRizz</h1>
+           )}
+         </button>
+         
+         <div className="flex items-center gap-2">
+           {keyStatus === 'valid' && <span className="text-xs font-bold text-emerald-600 flex items-center gap-1"><ShieldCheck className="h-4 w-4" /></span>}
+           {keyStatus === 'invalid' && <span className="text-xs font-bold text-red-600 flex items-center gap-1 animate-pulse"><ShieldAlert className="h-4 w-4" /></span>}
          </div>
        </div>
      </div>
