@@ -165,12 +165,14 @@ export default function App() {
  // Brand State
  const [websiteUrl, setWebsiteUrl] = useState('');
  const [isAnalyzingBrand, setIsAnalyzingBrand] = useState(false);
- const [brandColor, setBrandColor] = useState('#33475b');
- const [colorPalette, setColorPalette] = useState(['#33475b', '#ff7a59', '#ffffff']);
- const [brandFont, setBrandFont] = useState('Helvetica Neue');
+ const [brandColor, setBrandColor] = useState(localStorage.getItem('algorizz_brandColor') || '#33475b');
+ const [colorPalette, setColorPalette] = useState(JSON.parse(localStorage.getItem('algorizz_colorPalette') || '["#33475b", "#ff7a59", "#ffffff"]'));
+ const [brandFont, setBrandFont] = useState(localStorage.getItem('algorizz_brandFont') || 'Helvetica Neue');
  const [logoUrl, setLogoUrl] = useState(''); // Defaulted to empty string for generated content
- const [brandTone, setBrandTone] = useState('Professional and Direct');
+ const [brandTone, setBrandTone] = useState(localStorage.getItem('algorizz_brandTone') || 'Professional and Direct');
+ const [savedBrandVoice, setSavedBrandVoice] = useState(localStorage.getItem('algorizz_brandVoice') || '');
  const [headerImage, setHeaderImage] = useState(null);
+ const [showExtras, setShowExtras] = useState(false);
  const fileInputRef = useRef(null);
  const contentEditableRef = useRef(null);
 
@@ -415,6 +417,15 @@ export default function App() {
  useEffect(() => {
    checkKeyHealth();
  }, [customApiKey]);
+
+ // Persist brand settings to localStorage
+ useEffect(() => {
+   localStorage.setItem('algorizz_brandColor', brandColor);
+   localStorage.setItem('algorizz_colorPalette', JSON.stringify(colorPalette));
+   localStorage.setItem('algorizz_brandFont', brandFont);
+   localStorage.setItem('algorizz_brandTone', brandTone);
+   if (savedBrandVoice) localStorage.setItem('algorizz_brandVoice', savedBrandVoice);
+ }, [brandColor, colorPalette, brandFont, brandTone, savedBrandVoice]);
 
 
  useEffect(() => {
@@ -848,18 +859,20 @@ export default function App() {
      content = content.replace(/<noscript[^>]*>.*?<\/noscript>/gi, '');
      content = content.replace(/<!--[\s\S]*?-->/g, '');
 
-     // Convert to plain text for better readability
+     // Keep HTML with links preserved
      const tempDiv = document.createElement('div');
      tempDiv.innerHTML = content;
-     const plainText = tempDiv.innerText;
+     
+     // Convert to text but keep anchor tags
+     const cleanedHtml = tempDiv.innerHTML;
 
-     if (plainText.length < 100) {
+     if (cleanedHtml.length < 100) {
        throw new Error('Extracted content too short. The page might be behind a paywall or login.');
      }
 
-     setInputText(plainText);
+     setInputText(cleanedHtml);
      if (contentEditableRef.current) {
-       contentEditableRef.current.innerHTML = plainText;
+       contentEditableRef.current.innerHTML = cleanedHtml;
      }
      setInputMode('text');
      addDebug(`Successfully scraped ${plainText.length} characters`);
@@ -1034,6 +1047,7 @@ export default function App() {
 
 
      Use the Brand Tone: ${brandTone}.
+     ${savedBrandVoice ? `Brand Voice Guidelines: ${savedBrandVoice}` : ''}
    `;
 
 
@@ -1225,7 +1239,6 @@ ${optimizedContent}
      <div className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
          <div className="flex items-center gap-3">
-           <img src={algorizzLogoPath} alt="AlgoRizz Logo" className="h-8" />
            <h1 className="text-2xl font-bold" style={{ color: algorizzAccentColor }}>AlgoRizz</h1>
          </div>
          
@@ -1446,6 +1459,7 @@ ${optimizedContent}
                    </div>
                  </>
                )}
+               {inputMode === 'audio' && (
                  <>
                    <label className="text-sm font-semibold text-slate-700 block mb-2">Upload Audio</label>
                    <div className={`border-2 border-dashed border-slate-300 rounded-lg p-8 flex flex-col items-center justify-center text-center transition-all ${isTranscribing ? 'bg-slate-50 cursor-wait' : 'hover:bg-slate-50 hover:border-slate-400 cursor-pointer'}`}>
@@ -1468,6 +1482,37 @@ ${optimizedContent}
                  </>
                )}
              </div>
+             
+             {/* EXTRAS SECTION */}
+             {inputText && (
+               <div className="mb-4 border-t border-slate-200 pt-4">
+                 <button onClick={() => setShowExtras(!showExtras)} className="w-full flex items-center justify-between text-left px-3 py-2 hover:bg-slate-50 rounded-lg transition-all">
+                   <span className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                     <Sparkles className="h-4 w-4" style={{ color: algorizzAccentColor }} />
+                     Extras & Enhancements
+                   </span>
+                   <span className="text-xs text-slate-500">{showExtras ? '▼' : '▶'}</span>
+                 </button>
+                 
+                 {showExtras && (
+                   <div className="mt-3 space-y-3 px-3">
+                     <div className="grid grid-cols-2 gap-2">
+                       <button onClick={handleGenerateImage} disabled={!targetKeyword || isGeneratingImage} className="px-3 py-2 text-xs bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-all flex items-center justify-center gap-2 font-semibold disabled:opacity-50">
+                         {isGeneratingImage ? <RefreshCw className="h-3 w-3 animate-spin"/> : <LucideImage className="h-3 w-3"/>}
+                         {isGeneratingImage ? 'Generating...' : 'Header Image'}
+                       </button>
+                       <button disabled className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 text-slate-400 rounded-lg flex items-center justify-center gap-2 font-semibold cursor-not-allowed">
+                         <Type className="h-3 w-3"/>
+                         Add CTA
+                       </button>
+                     </div>
+                     {headerImage && <div className="text-xs text-emerald-600 flex items-center gap-1 font-semibold"><Check className="h-3 w-3" /> Header image ready</div>}
+                     <p className="text-xs text-slate-500">Generate enhancements before optimizing</p>
+                   </div>
+                 )}
+               </div>
+             )}
+             
              <button onClick={handleOptimize} disabled={isLoading || !inputText} style={{ backgroundColor: isLoading ? '#e2e8f0' : algorizzAccentColor }} className={`flex items-center justify-center gap-2 w-full py-3 rounded-lg text-white font-bold transition-all ${isLoading ? 'cursor-wait' : 'hover:shadow-md'}`}>
                {isLoading ? <><RefreshCw className="animate-spin h-5 w-5" /> <span>Optimising...</span></> : <>Optimise Content <ArrowRight className="h-5 w-5" /></>}
              </button>
@@ -1543,6 +1588,12 @@ ${optimizedContent}
                   <label className="block text-sm font-semibold text-slate-900 mb-2">Google Gemini API Key</label>
                   <p className="text-xs text-slate-600 mb-3">System Key: {defaultApiKey ? "✓ Loaded" : "✗ Missing"}</p>
                   <input type="password" placeholder="Override with AIzaSy..." value={customApiKey} onChange={(e) => setCustomApiKey(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 transition-all"/>
+               </div>
+               <div>
+                  <label className="block text-sm font-semibold text-slate-900 mb-2">Brand Voice (Optional)</label>
+                  <p className="text-xs text-slate-600 mb-3">Describe your brand's writing style, tone, and personality</p>
+                  <textarea placeholder="e.g., We write in a conversational yet authoritative tone, using British English spelling. We avoid jargon and prefer short sentences..." value={savedBrandVoice} onChange={(e) => setSavedBrandVoice(e.target.value)} rows={4} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200 transition-all resize-none"/>
+                  <p className="text-xs text-slate-500 mt-1">This will be applied to all content optimizations</p>
                </div>
                <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 h-40 overflow-y-auto">
                   <div className="flex items-center gap-2 mb-3 text-xs font-semibold text-slate-700 pb-2 border-b border-slate-200">
