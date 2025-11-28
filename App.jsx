@@ -3,7 +3,7 @@ import { Copy, RefreshCw, ArrowRight, Code, FileText, Check, AlertCircle, Palett
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
-import LoginPage from './src/components/LoginPage';
+import LoginPage from '/src/components/LoginPage';
 
 
 // --- FIREBASE CONFIGURATION ---
