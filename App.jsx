@@ -3,6 +3,7 @@ import { Copy, RefreshCw, ArrowRight, Code, FileText, Check, AlertCircle, Palett
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
+import LoginPage from './src/components/LoginPage';
 
 
 // --- FIREBASE CONFIGURATION ---
@@ -129,7 +130,9 @@ const adjustColor = (hex, amount) => {
 
 
 export default function App() {
- // Auth & User State
+ // Auth & Login State
+ const [isAuthenticated, setIsAuthenticated] = useState(false);
+ const [isCheckingAuth, setIsCheckingAuth] = useState(true);
  const [user, setUser] = useState(null);
  const [isAuthReady, setIsAuthReady] = useState(false);
  const [view, setView] = useState('editor'); // 'editor' | 'library'
@@ -231,6 +234,16 @@ export default function App() {
    }
  };
 
+
+ // --- CHECK AUTH STATUS ON MOUNT ---
+ useEffect(() => {
+   const authStatus = localStorage.getItem('algorizz_authenticated');
+   const userEmail = localStorage.getItem('algorizz_user');
+   if (authStatus === 'true' && userEmail) {
+     setIsAuthenticated(true);
+   }
+   setIsCheckingAuth(false);
+ }, []);
 
  // --- FIREBASE AUTH & DATA ---
  useEffect(() => {
@@ -1457,6 +1470,25 @@ ${optimizedContent}
  };
 
 
+ // Show loading state while checking auth
+ if (isCheckingAuth) {
+   return (
+     <div className="min-h-screen bg-gradient-to-br from-[#0d0520] via-[#1a0b2e] to-[#0d0520] flex items-center justify-center">
+       <div className="text-center">
+         <div className="w-16 h-16 border-4 border-[#FF1493] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+         <p className="text-[#00E5FF] text-xl" style={{ fontFamily: "'VT323', monospace" }}>
+           Initializing AlgoRizz...
+         </p>
+       </div>
+     </div>
+   );
+ }
+
+ // Show login page if not authenticated
+ if (!isAuthenticated) {
+   return <LoginPage onLogin={() => setIsAuthenticated(true)} />;
+ }
+
  return (
    <div className="min-h-screen text-white font-sans bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
      {/* SIDEBAR MENU */}
@@ -1524,8 +1556,36 @@ ${optimizedContent}
              </button>
            </nav>
            
-           <div className="p-4 border-t border-slate-200">
-             <p className="text-xs text-slate-500 text-center">Configure brand assets in Settings</p>
+           <div className="mt-auto p-4 border-t" style={{ borderColor: 'rgba(255, 20, 147, 0.3)' }}>
+             <button
+               onClick={() => {
+                 localStorage.removeItem('algorizz_authenticated');
+                 localStorage.removeItem('algorizz_user');
+                 setIsAuthenticated(false);
+                 setShowSidebar(false);
+               }}
+               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium"
+               style={{ 
+                 backgroundColor: 'rgba(255, 20, 147, 0.1)',
+                 color: '#FF1493',
+                 fontFamily: "'Press Start 2P', monospace",
+                 fontSize: '0.7rem'
+               }}
+               onMouseEnter={(e) => {
+                 e.currentTarget.style.backgroundColor = 'rgba(255, 20, 147, 0.2)';
+                 e.currentTarget.style.boxShadow = '0 0 20px rgba(255, 20, 147, 0.4)';
+               }}
+               onMouseLeave={(e) => {
+                 e.currentTarget.style.backgroundColor = 'rgba(255, 20, 147, 0.1)';
+                 e.currentTarget.style.boxShadow = 'none';
+               }}
+             >
+               <Lock className="h-5 w-5" />
+               <span>LOGOUT</span>
+             </button>
+             <p className="text-xs text-center mt-3" style={{ color: '#a0aec0', fontFamily: "'VT323', monospace" }}>
+               Configure brand assets in Settings
+             </p>
            </div>
          </div>
        </div>
