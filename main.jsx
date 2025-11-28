@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import AlgorizGEOApp from './src/AlgorizGEOApp'
-import LoginPage from '/src/components/LoginPage'
+import LoginPage from './src/components/LoginPage'
 
 // App Switcher - Toggle between legacy AEO tool and new GEO platform
 function AppSwitcher() {
