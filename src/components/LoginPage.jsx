@@ -36,6 +36,12 @@ const LoginPage = ({ onLogin }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0d0520] via-[#1a0b2e] to-[#0d0520] flex items-center justify-center p-4 overflow-hidden relative">
+      {/* Login Required Banner */}
+      <div className="w-full bg-[#FF1493]/20 backdrop-blur-sm border-b border-[#FF1493]/40 text-center py-3 fixed top-0 left-0 z-50">
+        <span className="font-['Press_Start_2P'] text-xs tracking-wider text-[#FF1493]">
+          LOGIN REQUIRED — ACCESS IS GATED UNTIL AUTHENTICATED
+        </span>
+      </div>
       {/* Animated background grid */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute inset-0" style={{
@@ -52,7 +58,7 @@ const LoginPage = ({ onLogin }) => {
       <div className="absolute top-20 left-20 w-96 h-96 bg-[#FF1493] rounded-full blur-[120px] opacity-20 animate-pulse" />
       <div className="absolute bottom-20 right-20 w-96 h-96 bg-[#00E5FF] rounded-full blur-[120px] opacity-20 animate-pulse" style={{ animationDelay: '2s' }} />
 
-      <div className="max-w-6xl w-full grid md:grid-cols-2 gap-8 items-center relative z-10">
+      <div className="max-w-6xl w-full grid md:grid-cols-2 gap-8 items-center relative z-10 mt-12">
         {/* Left side - Branding & Features */}
         <div className="text-white space-y-8 p-8">
           <div className="space-y-4">
