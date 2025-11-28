@@ -148,6 +148,12 @@ const LoginPage = ({ onLogin }) => {
             <p className="text-gray-400" style={{ fontFamily: "'VT323', monospace", fontSize: '1.1rem' }}>
               {isLogin ? 'Enter your credentials to continue' : 'Join the AEO revolution'}
             </p>
+            <div className="mt-3 flex items-center justify-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-[#00E5FF] animate-pulse shadow-[0_0_8px_#00E5FF]" />
+              <span className="text-xs text-[#00E5FF]" style={{ fontFamily: "'VT323', monospace" }}>
+                Secure session
+              </span>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -242,6 +248,9 @@ const LoginPage = ({ onLogin }) => {
             <p className="text-center text-gray-500 text-xs" style={{ fontFamily: "'VT323', monospace" }}>
               Protected by enterprise-grade encryption<br />
               Your data is safe with us 🔒
+            </p>
+            <p className="text-center text-gray-500 text-[10px] mt-2" style={{ fontFamily: "'VT323', monospace" }}>
+              By continuing you agree to our Terms & Privacy
             </p>
           </div>
         </div>

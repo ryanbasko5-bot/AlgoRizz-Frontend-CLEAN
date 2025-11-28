@@ -10,10 +10,13 @@ function AppSwitcher() {
   const [mode, setMode] = useState('geo'); // 'aeo' | 'geo'
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Force login every visit: clear any stored auth on mount
+  // Load persisted auth on mount
   useEffect(() => {
-    localStorage.removeItem('algorizz_authenticated');
-    localStorage.removeItem('algorizz_user');
+    const authStatus = localStorage.getItem('algorizz_authenticated');
+    const userEmail = localStorage.getItem('algorizz_user');
+    if (authStatus === 'true' && userEmail) {
+      setIsAuthenticated(true);
+    }
   }, []);
 
   if (!isAuthenticated) {
@@ -24,6 +27,19 @@ function AppSwitcher() {
     <div>
       {/* Quick Toggle (Dev Only) */}
       <div className="fixed top-4 right-4 z-50 flex gap-2">
+        {/* Global Logout */}
+        {isAuthenticated && (
+          <button
+            onClick={() => {
+              localStorage.removeItem('algorizz_authenticated');
+              localStorage.removeItem('algorizz_user');
+              setIsAuthenticated(false);
+            }}
+            className="px-4 py-2 rounded-lg font-['Press_Start_2P'] text-xs border-2 border-[#FF1493] text-[#FF1493] hover:bg-[#FF1493] hover:text-[#0d0520] transition-all duration-200 shadow-[0_0_12px_rgba(255,20,147,0.6)]"
+          >
+            LOG OUT
+          </button>
+        )}
         <button
           onClick={() => setMode('aeo')}
           className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${

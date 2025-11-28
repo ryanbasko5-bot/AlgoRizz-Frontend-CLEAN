@@ -3,7 +3,7 @@ import { Copy, RefreshCw, ArrowRight, Code, FileText, Check, AlertCircle, Palett
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
-import LoginPage from '/src/components/LoginPage';
+import LoginPage from './src/components/LoginPage';
 
 
 // --- FIREBASE CONFIGURATION ---
@@ -143,12 +143,6 @@ export default function App() {
  const [debugLog, setDebugLog] = useState([]);
  const [showSidebar, setShowSidebar] = useState(false);
  const [customLogo, setCustomLogo] = useState(localStorage.getItem('algorizz_customLogo') || '');
-
-  const logout = () => {
-    localStorage.removeItem('algorizz_authenticated');
-    localStorage.removeItem('algorizz_user');
-    location.reload();
-  };
  const [appBackgroundColor, setAppBackgroundColor] = useState('#1a0b2e');
 
 
@@ -243,9 +237,11 @@ export default function App() {
 
  // --- CHECK AUTH STATUS ON MOUNT ---
  useEffect(() => {
-   // Clear any stored auth on mount - force login every time
-   localStorage.removeItem('algorizz_authenticated');
-   localStorage.removeItem('algorizz_user');
+   const authStatus = localStorage.getItem('algorizz_authenticated');
+   const userEmail = localStorage.getItem('algorizz_user');
+   if (authStatus === 'true' && userEmail) {
+     setIsAuthenticated(true);
+   }
    setIsCheckingAuth(false);
  }, []);
 
@@ -1495,15 +1491,6 @@ ${optimizedContent}
 
  return (
    <div className="min-h-screen text-white font-sans bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-     {/* Global Logout */}
-     <div className="fixed bottom-4 right-4 z-50">
-       <button
-         onClick={logout}
-         className="px-4 py-2 rounded-lg font-['Press_Start_2P'] text-xs border-2 border-[#FF1493] text-[#FF1493] hover:bg-[#FF1493] hover:text-[#0d0520] transition-all duration-200 shadow-[0_0_12px_rgba(255,20,147,0.6)]"
-       >
-         LOG OUT
-       </button>
-     </div>
      {/* SIDEBAR MENU */}
      {showSidebar && (
        <div className="fixed inset-0 z-50 flex">
@@ -1630,6 +1617,13 @@ ${optimizedContent}
            {keyStatus === 'valid' && <span className="text-xs font-bold text-emerald-600 flex items-center gap-1"><ShieldCheck className="h-4 w-4" /></span>}
            {keyStatus === 'invalid' && <span className="text-xs font-bold text-red-600 flex items-center gap-1 animate-pulse"><ShieldAlert className="h-4 w-4" /></span>}
          </div>
+          <div className="flex items-center gap-3">
+            <div className="px-3 py-1 rounded bg-white/5 border border-pink-500/30">
+              <span className="text-[10px] text-pink-300" style={{ fontFamily: "'VT323', monospace" }}>
+                Signed in as {localStorage.getItem('algorizz_user') || 'guest'}
+              </span>
+            </div>
+          </div>
        </div>
      </div>
 
