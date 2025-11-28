@@ -1,12 +1,24 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import AlgorizGEOApp from './src/AlgorizGEOApp'
+import LoginPage from '/src/components/LoginPage'
 
 // App Switcher - Toggle between legacy AEO tool and new GEO platform
 function AppSwitcher() {
   const [mode, setMode] = useState('geo'); // 'aeo' | 'geo'
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Force login every visit: clear any stored auth on mount
+  useEffect(() => {
+    localStorage.removeItem('algorizz_authenticated');
+    localStorage.removeItem('algorizz_user');
+  }, []);
+
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={() => setIsAuthenticated(true)} />;
+  }
 
   return (
     <div>
@@ -34,7 +46,7 @@ function AppSwitcher() {
         </button>
       </div>
 
-      {/* Render Active App */}
+      {/* Render Active App (behind login gate) */}
       {mode === 'aeo' ? <App /> : <AlgorizGEOApp />}
     </div>
   );
