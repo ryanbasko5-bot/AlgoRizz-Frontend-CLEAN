@@ -143,6 +143,12 @@ export default function App() {
  const [debugLog, setDebugLog] = useState([]);
  const [showSidebar, setShowSidebar] = useState(false);
  const [customLogo, setCustomLogo] = useState(localStorage.getItem('algorizz_customLogo') || '');
+
+  const logout = () => {
+    localStorage.removeItem('algorizz_authenticated');
+    localStorage.removeItem('algorizz_user');
+    location.reload();
+  };
  const [appBackgroundColor, setAppBackgroundColor] = useState('#1a0b2e');
 
 
@@ -1489,6 +1495,15 @@ ${optimizedContent}
 
  return (
    <div className="min-h-screen text-white font-sans bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+     {/* Global Logout */}
+     <div className="fixed bottom-4 right-4 z-50">
+       <button
+         onClick={logout}
+         className="px-4 py-2 rounded-lg font-['Press_Start_2P'] text-xs border-2 border-[#FF1493] text-[#FF1493] hover:bg-[#FF1493] hover:text-[#0d0520] transition-all duration-200 shadow-[0_0_12px_rgba(255,20,147,0.6)]"
+       >
+         LOG OUT
+       </button>
+     </div>
      {/* SIDEBAR MENU */}
      {showSidebar && (
        <div className="fixed inset-0 z-50 flex">

@@ -22,6 +22,11 @@ import PricingSystem from './components/PricingSystem';
  */
 
 export default function AlgorizzGEOApp() {
+  const logout = () => {
+    localStorage.removeItem('algorizz_authenticated');
+    localStorage.removeItem('algorizz_user');
+    location.reload();
+  };
   const [activeView, setActiveView] = useState('dashboard'); // dashboard, editor, analytics, intelligence, pricing
   const [showSidebar, setShowSidebar] = useState(true);
   const [currentDomain, setCurrentDomain] = useState('example.com');
@@ -57,6 +62,15 @@ export default function AlgorizzGEOApp() {
       case 'analytics':
         return <AttributionFrequencyTracker domain={currentDomain} dateRange="30d" />;
       case 'outcome-studio':
+            {/* Global Logout */}
+            <div className="fixed bottom-4 right-4 z-50">
+              <button
+                onClick={logout}
+                className="px-4 py-2 rounded-lg font-['Press_Start_2P'] text-xs border-2 border-[#FF1493] text-[#FF1493] hover:bg-[#FF1493] hover:text-[#0d0520] transition-all duration-200 shadow-[0_0_12px_rgba(255,20,147,0.6)]"
+              >
+                LOG OUT
+              </button>
+            </div>
         return userTier === 'enterprise' ? (
           <OutcomeEngineeringStudio />
         ) : (
