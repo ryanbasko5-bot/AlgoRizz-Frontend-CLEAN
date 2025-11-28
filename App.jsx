@@ -237,11 +237,9 @@ export default function App() {
 
  // --- CHECK AUTH STATUS ON MOUNT ---
  useEffect(() => {
-   const authStatus = localStorage.getItem('algorizz_authenticated');
-   const userEmail = localStorage.getItem('algorizz_user');
-   if (authStatus === 'true' && userEmail) {
-     setIsAuthenticated(true);
-   }
+   // Clear any stored auth on mount - force login every time
+   localStorage.removeItem('algorizz_authenticated');
+   localStorage.removeItem('algorizz_user');
    setIsCheckingAuth(false);
  }, []);
 
